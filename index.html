@@ -149,13 +149,41 @@ body{
 @keyframes pgIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
 .pg,.analytics-page,.inv-page,.purchase-page,.entries-page,.settings-page{
-  padding:0 14px 80px;width:100%;max-width:680px;margin:0 auto;overflow-x:hidden;position:relative;z-index:1;
+  padding:0 14px 80px;width:100%;max-width:100%;overflow-x:hidden;position:relative;z-index:1;
 }
 
-/* Desktop centering */
+/* Desktop — full width with generous padding */
 @media(min-width:640px){
-  .pg,.analytics-page,.inv-page,.purchase-page,.entries-page,.settings-page{padding:0 24px 80px;}
-  .nav{padding:0 24px;}
+  .pg,.analytics-page,.inv-page,.purchase-page,.entries-page,.settings-page{
+    padding:0 32px 80px;
+  }
+  .nav{padding:0 32px;}
+}
+@media(min-width:1024px){
+  .pg,.analytics-page,.inv-page,.purchase-page,.entries-page,.settings-page{
+    padding:0 48px 80px;
+  }
+  .nav{padding:0 48px;}
+  /* Wider KPI grids on desktop */
+  .kpi-row.four{grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+@media(min-width:1280px){
+  .pg,.analytics-page,.inv-page,.purchase-page,.entries-page,.settings-page{
+    padding:0 64px 80px;
+  }
+  .nav{padding:0 64px;}
+}
+/* Wide desktop — more columns */
+@media(min-width:900px){
+  .kpi-row{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .kpi-row.three{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .manage-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+  /* dashboard two-column layout */
+  .dash-desktop-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  .dash-left{min-width:0;}
+  .dash-right{min-width:0;}
+  /* entries list wider */
+  .ch-dash-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
 
 .pg-head{padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:18px;}
@@ -775,10 +803,117 @@ body{
 .svh-chart{display:flex;align-items:flex-end;gap:5px;height:100px;}
 .svh-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;}
 /* ══════════════════════════════════════════
+   FINANCE PAGE
+══════════════════════════════════════════ */
+.fin-page{
+  padding:0 14px 80px;
+  width:100%;max-width:100%;
+  overflow-x:hidden;position:relative;z-index:1;
+}
+@media(min-width:640px){.fin-page{padding:0 32px 80px;}}
+@media(min-width:1024px){.fin-page{padding:0 48px 80px;}}
+@media(min-width:1280px){.fin-page{padding:0 64px 80px;}}
+
+.fin-toolbar{
+  padding:20px 0 16px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.fin-toolbar h2{
+  font-family:'Instrument Serif',serif;
+  font-size:25px;font-weight:400;letter-spacing:-.3px;color:var(--text);
+}
+.fin-toolbar p{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* Pie chart card */
+.pie-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:18px;margin-bottom:10px;
+  box-shadow:0 1px 0 var(--border),0 2px 8px var(--shadow);
+}
+.pie-title{
+  font-size:12px;font-weight:600;color:var(--text);margin-bottom:16px;
+}
+.pie-wrap{
+  display:flex;flex-direction:column;gap:16px;
+  align-items:center;
+}
+.pie-svg-wrap{
+  width:160px;height:160px;flex-shrink:0;
+}
+.pie-legend{
+  width:100%;display:flex;flex-direction:column;gap:7px;
+}
+@media(min-width:540px){
+  .pie-wrap{flex-direction:row;align-items:center;gap:24px;}
+  .pie-legend{flex:1;}
+}
+.pie-legend-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--text2);
+}
+.pie-dot{
+  width:10px;height:10px;border-radius:3px;flex-shrink:0;
+}
+.pie-legend-name{flex:1;font-size:11px;color:var(--text2);}
+.pie-legend-val{
+  font-family:'Geist Mono',monospace;font-size:11px;
+  font-weight:600;color:var(--text);flex-shrink:0;
+}
+.pie-legend-pct{
+  font-size:10px;color:var(--text3);
+  font-family:'Geist Mono',monospace;width:36px;text-align:right;
+}
+
+/* COD vs Prepaid comparison */
+.compare-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:18px;margin-bottom:10px;
+  box-shadow:0 1px 0 var(--border),0 2px 8px var(--shadow);
+}
+.compare-title{
+  font-size:12px;font-weight:600;color:var(--text);margin-bottom:14px;
+}
+.compare-cols{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;margin-bottom:12px;
+}
+.cmp-col{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px 12px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.cod-col{border-top:3px solid var(--blue);}
+.pre-col{border-top:3px solid var(--purple);}
+.cmp-col-title{
+  font-size:12px;font-weight:700;color:var(--text);
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.cmp-stat{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cmp-stat-val{
+  font-family:'Geist Mono',monospace;
+  font-size:13px;font-weight:600;color:var(--text);
+}
+.cmp-stat-lbl{
+  font-size:9px;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--text3);font-weight:500;
+}
+.cmp-winner{
+  margin-top:4px;padding:10px 14px;
+  border-radius:10px;font-size:12px;font-weight:600;
+  background:var(--green-bg);color:var(--green);
+  border:1px solid rgba(26,158,96,.2);text-align:center;
+}
+
+/* ══════════════════════════════════════════
    MOBILE BOTTOM BAR
 ══════════════════════════════════════════ */
 .mobile-bottom-bar{
-  display:none; /* hidden on desktop */
+  display:none;
   position:fixed;
   bottom:0;left:0;right:0;
   height:64px;
@@ -794,7 +929,10 @@ body{
   -webkit-backdrop-filter:blur(20px);
 }
 
-/* Show on mobile only */
+/* Show on mobile only, fully hidden on desktop */
+@media(min-width:768px){
+  .mobile-bottom-bar{display:none !important;}
+}
 @media(max-width:767px){
   .mobile-bottom-bar{display:flex;}
   /* push page content above bottom bar */
@@ -1866,6 +2004,8 @@ body.dark .hero-amount.positive{color:var(--accent);}
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
 <div class="page active" id="page-dashboard">
 <div class="pg">
+
+  <!-- Hero + period filter — full width -->
   <div class="hero">
     <div class="hero-label">Net Profit / Loss</div>
     <div class="hero-amount positive" id="d-profit">₹0</div>
@@ -1873,13 +2013,13 @@ body.dark .hero-amount.positive{color:var(--accent);}
       <span id="d-hero-badge" class="hero-badge up">↑ 0%</span>
       <span id="d-hero-sub">No orders yet</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;max-width:500px;">
       <button onclick="showPage('order')" style="padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:Geist,sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">＋ Add Order</button>
       <button onclick="openQuickOrder()" id="dash-quick-btn" style="padding:10px;border-radius:10px;border:1.5px dashed var(--border2);background:transparent;color:var(--text2);font-family:Geist,sans-serif;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;">⚡ Quick Add</button>
     </div>
   </div>
 
-  <!-- Dashboard period filter -->
+  <!-- Period filter -->
   <div class="fp-tabs" style="margin-top:14px;" id="dash-period-tabs">
     <button class="fptab active" onclick="setDashPeriod('all',this)">All Time</button>
     <button class="fptab" onclick="setDashPeriod('today',this)">Today</button>
@@ -1892,64 +2032,71 @@ body.dark .hero-amount.positive{color:var(--accent);}
     <div><label style="font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px;">To</label><input class="date-input" type="date" id="dash-date-to" oninput="renderDashboard()" /></div>
   </div>
 
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-glow g"></div><span class="kpi-icon">💰</span><div class="kpi-label">Total Revenue</div><div class="kpi-value g" id="d-revenue">₹0</div></div>
-    <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">📤</span><div class="kpi-label">Total Costs</div><div class="kpi-value r" id="d-costs">₹0</div></div>
-  </div>
-  <div class="kpi-row three">
-    <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">📦</span><div class="kpi-label">Orders</div><div class="kpi-value b" id="d-orders">0</div></div>
-    <div class="kpi"><div class="kpi-glow p"></div><span class="kpi-icon">🔢</span><div class="kpi-label">Units Sold</div><div class="kpi-value p" id="d-units">0</div></div>
-    <div class="kpi"><div class="kpi-glow a"></div><span class="kpi-icon">⌀</span><div class="kpi-label">Avg Profit</div><div class="kpi-value a" id="d-avg">₹0</div></div>
-  </div>
+  <!-- Desktop 2-col grid, mobile single col -->
+  <div class="dash-desktop-wrap">
 
-  <!-- COD Remittance Summary -->
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">COD Remittance</div><div class="sh-line"></div></div>
-  <div class="kpi-row three">
-    <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">🔄</span><div class="kpi-label">COD Collected</div><div class="kpi-value b" id="d-cod-total">₹0</div></div>
-    <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⏳</span><div class="kpi-label">Pending</div><div class="kpi-value o" id="d-cod-pending">₹0</div></div>
-    <div class="kpi"><div class="kpi-glow g"></div><span class="kpi-icon">✅</span><div class="kpi-label">Received</div><div class="kpi-value g" id="d-cod-received">₹0</div></div>
-  </div>
+    <!-- LEFT column -->
+    <div class="dash-left">
+      <div class="kpi-row" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+        <div class="kpi"><div class="kpi-glow g"></div><span class="kpi-icon">💰</span><div class="kpi-label">Total Revenue</div><div class="kpi-value g" id="d-revenue">₹0</div></div>
+        <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">📤</span><div class="kpi-label">Total Costs</div><div class="kpi-value r" id="d-costs">₹0</div></div>
+      </div>
+      <div class="kpi-row three">
+        <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">📦</span><div class="kpi-label">Orders</div><div class="kpi-value b" id="d-orders">0</div></div>
+        <div class="kpi"><div class="kpi-glow p"></div><span class="kpi-icon">🔢</span><div class="kpi-label">Units Sold</div><div class="kpi-value p" id="d-units">0</div></div>
+        <div class="kpi"><div class="kpi-glow a"></div><span class="kpi-icon">⌀</span><div class="kpi-label">Avg Profit</div><div class="kpi-value a" id="d-avg">₹0</div></div>
+      </div>
 
-  <!-- Profit Margin -->
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">Profit Margin</div><div class="sh-line"></div></div>
-  <div class="margin-card">
-    <div class="mc-top"><div class="mc-label">Margin Rate</div><div class="mc-pct" id="d-margin-pct">0%</div></div>
-    <div class="bar-track"><div class="bar-fill" id="d-bar" style="width:0%"></div></div>
-    <div class="mc-foot"><span>Revenue: <span id="mc-rev">₹0</span></span><span>Costs: <span id="mc-cost">₹0</span></span></div>
-  </div>
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">COD Remittance</div><div class="sh-line"></div></div>
+      <div class="kpi-row three">
+        <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">🔄</span><div class="kpi-label">COD Collected</div><div class="kpi-value b" id="d-cod-total">₹0</div></div>
+        <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⏳</span><div class="kpi-label">Pending</div><div class="kpi-value o" id="d-cod-pending">₹0</div></div>
+        <div class="kpi"><div class="kpi-glow g"></div><span class="kpi-icon">✅</span><div class="kpi-label">Received</div><div class="kpi-value g" id="d-cod-received">₹0</div></div>
+      </div>
 
-  <!-- Sales Channels -->
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">Sales by Channel</div><div class="sh-line"></div></div>
-  <div class="ch-dash-grid" id="ch-dash-grid">
-    <div class="empty"><div class="empty-icon">📡</div><div class="empty-text">No orders yet</div></div>
-  </div>
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">Profit Margin</div><div class="sh-line"></div></div>
+      <div class="margin-card">
+        <div class="mc-top"><div class="mc-label">Margin Rate</div><div class="mc-pct" id="d-margin-pct">0%</div></div>
+        <div class="bar-track"><div class="bar-fill" id="d-bar" style="width:0%"></div></div>
+        <div class="mc-foot"><span>Revenue: <span id="mc-rev">₹0</span></span><span>Costs: <span id="mc-cost">₹0</span></span></div>
+      </div>
 
-  <!-- Order Breakdown -->
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">Order Breakdown</div><div class="sh-line"></div></div>
-  <div class="bk-card">
-    <div class="bk-row head"><span class="bk-head-txt">Category</span><span class="bk-head-txt">Amount</span></div>
-    <div class="bk-row"><span class="bk-name">COD Revenue</span><span class="bk-val g" id="d-cod-rev">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Prepaid Revenue</span><span class="bk-val g" id="d-pre-rev">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">COD Shipping</span><span class="bk-val r" id="d-cod-ship">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Prepaid Shipping</span><span class="bk-val r" id="d-pre-ship">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Product Cost</span><span class="bk-val r" id="d-prod-cost">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Ad Spend</span><span class="bk-val r" id="d-ad-spend">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Returns / Refunds</span><span class="bk-val r" id="d-returns">₹0</span></div>
-    <div class="bk-row"><span class="bk-name">Inventory Value</span><span class="bk-val o" id="d-inv-val">₹0</span></div>
-  </div>
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">Inventory Status</div><div class="sh-line"></div></div>
+      <div class="kpi-row three">
+        <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">📋</span><div class="kpi-label">Products</div><div class="kpi-value b" id="d-inv-total">0</div></div>
+        <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⚠️</span><div class="kpi-label">Low Stock</div><div class="kpi-value o" id="d-inv-low">0</div></div>
+        <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">❌</span><div class="kpi-label">Out of Stock</div><div class="kpi-value r" id="d-inv-out">0</div></div>
+      </div>
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">Purchases</div><div class="sh-line"></div></div>
+      <div class="kpi-row three">
+        <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">🛒</span><div class="kpi-label">Total Purchases</div><div class="kpi-value b" id="d-pur-count">0</div></div>
+        <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">💸</span><div class="kpi-label">Amount Spent</div><div class="kpi-value r" id="d-pur-total">₹0</div></div>
+        <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⏳</span><div class="kpi-label">Credit Due</div><div class="kpi-value o" id="d-pur-credit">₹0</div></div>
+      </div>
+    </div>
 
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">Inventory Status</div><div class="sh-line"></div></div>
-  <div class="kpi-row three">
-    <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">📋</span><div class="kpi-label">Products</div><div class="kpi-value b" id="d-inv-total">0</div></div>
-    <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⚠️</span><div class="kpi-label">Low Stock</div><div class="kpi-value o" id="d-inv-low">0</div></div>
-    <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">❌</span><div class="kpi-label">Out of Stock</div><div class="kpi-value r" id="d-inv-out">0</div></div>
-  </div>
-  <div class="sh"><div class="sh-line"></div><div class="sh-text">Purchases</div><div class="sh-line"></div></div>
-  <div class="kpi-row three">
-    <div class="kpi"><div class="kpi-glow b"></div><span class="kpi-icon">🛒</span><div class="kpi-label">Total Purchases</div><div class="kpi-value b" id="d-pur-count">0</div></div>
-    <div class="kpi"><div class="kpi-glow r"></div><span class="kpi-icon">💸</span><div class="kpi-label">Amount Spent</div><div class="kpi-value r" id="d-pur-total">₹0</div></div>
-    <div class="kpi"><div class="kpi-glow o"></div><span class="kpi-icon">⏳</span><div class="kpi-label">Credit Due</div><div class="kpi-value o" id="d-pur-credit">₹0</div></div>
-  </div>
+    <!-- RIGHT column -->
+    <div class="dash-right">
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">Sales by Channel</div><div class="sh-line"></div></div>
+      <div class="ch-dash-grid" id="ch-dash-grid">
+        <div class="empty"><div class="empty-icon">📡</div><div class="empty-text">No orders yet</div></div>
+      </div>
+
+      <div class="sh"><div class="sh-line"></div><div class="sh-text">Order Breakdown</div><div class="sh-line"></div></div>
+      <div class="bk-card">
+        <div class="bk-row head"><span class="bk-head-txt">Category</span><span class="bk-head-txt">Amount</span></div>
+        <div class="bk-row"><span class="bk-name">COD Revenue</span><span class="bk-val g" id="d-cod-rev">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Prepaid Revenue</span><span class="bk-val g" id="d-pre-rev">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">COD Shipping</span><span class="bk-val r" id="d-cod-ship">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Prepaid Shipping</span><span class="bk-val r" id="d-pre-ship">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Product Cost</span><span class="bk-val r" id="d-prod-cost">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Ad Spend</span><span class="bk-val r" id="d-ad-spend">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Returns / Refunds</span><span class="bk-val r" id="d-returns">₹0</span></div>
+        <div class="bk-row"><span class="bk-name">Inventory Value</span><span class="bk-val o" id="d-inv-val">₹0</span></div>
+      </div>
+    </div>
+
+  </div><!-- end dash-desktop-wrap -->
 </div>
 </div>
 
@@ -3048,9 +3195,58 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ─── CHANNEL SELECT ───
 function selectChannel(name,ico){
   selChannel=name;
-  document.querySelectorAll('.ch-pill').forEach(b=>{
+  document.querySelectorAll('#channel-grid .ch-pill').forEach(b=>{
     b.classList.toggle('selected',b.dataset.ch===name);
   });
+
+  // ── Auto-fill aggregator & courier based on channel ──
+  const CHANNEL_RULES = {
+    'Amazon':   {agg:'Amazon Shipping', courier:'Amazon Shipping', courierOptions:null},
+    'Flipkart': {agg:'Flipkart',        courier:'Ekart',           courierOptions:null},
+    'Meesho':   {agg:'Meesho',          courier:null,              courierOptions:['Delhivery','XpressBees']},
+  };
+
+  const rule = CHANNEL_RULES[name];
+  if(rule){
+    // Set aggregator
+    selAgg = rule.agg;
+    document.querySelectorAll('#agg-grid .ch-pill').forEach(b=>{
+      b.classList.toggle('selected', b.dataset.agg===selAgg);
+    });
+
+    // Set courier or show options
+    if(rule.courier){
+      selCourier = rule.courier;
+      document.querySelectorAll('#courier-grid .ch-pill').forEach(b=>{
+        b.classList.toggle('selected', b.dataset.courier===selCourier);
+      });
+    } else if(rule.courierOptions){
+      // Meesho — highlight the two options, let user pick
+      selCourier = '';
+      document.querySelectorAll('#courier-grid .ch-pill').forEach(b=>{
+        b.classList.remove('selected');
+        // Visually highlight the available options
+        if(rule.courierOptions.includes(b.dataset.courier)){
+          b.style.borderColor='var(--accent)';
+          b.style.color='var(--accent)';
+        } else {
+          b.style.borderColor='';
+          b.style.color='';
+        }
+      });
+      showToast('Select courier: Delhivery or XpressBees');
+      return;
+    }
+    // Reset courier highlight styles
+    document.querySelectorAll('#courier-grid .ch-pill').forEach(b=>{
+      b.style.borderColor='';b.style.color='';
+    });
+  } else {
+    // Non-mapped channel — clear auto selections
+    document.querySelectorAll('#courier-grid .ch-pill').forEach(b=>{
+      b.style.borderColor='';b.style.color='';
+    });
+  }
 }
 
 // ─── AGGREGATOR / COURIER SELECT ───
@@ -5222,20 +5418,5 @@ renderPurchaseList();
   </button>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const supabaseUrl = "https://supabase.com/dashboard/project/ngxlgkbuambtpptpqwnz";
-
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5neGxna2J1YW1idHBwdHBxd256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDc0MTMsImV4cCI6MjA5NTc4MzQxM30.DMie1zNgSSxoqo1G7ZxXfqHnvXVO7BkdEP_wJ1URTOg";
-
-const supabase = window.supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
-
-console.log("Supabase Connected");
-</script>
-   
 </body>
 </html>
