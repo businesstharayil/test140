@@ -1,6 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+ 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business P&L - Login</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+}
+
+.card{
+    width:400px;
+    background:#fff;
+    padding:35px;
+    border-radius:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo h1{
+    color:#2563eb;
+    font-size:32px;
+}
+
+.logo p{
+    color:#666;
+    margin-top:5px;
+}
+
+.tabs{
+    display:flex;
+    margin-bottom:20px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#f3f4f6;
+}
+
+.tabs button{
+    flex:1;
+    border:none;
+    padding:12px;
+    cursor:pointer;
+    background:none;
+    font-weight:600;
+}
+
+.tabs button.active{
+    background:#2563eb;
+    color:white;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    margin-bottom:12px;
+    font-size:15px;
+}
+
+.action-btn{
+    width:100%;
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:14px;
+    border-radius:10px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.action-btn:hover{
+    opacity:.9;
+}
+
+.message{
+    margin-top:15px;
+    text-align:center;
+    font-size:14px;
+}
+
+.user-box{
+    display:none;
+    text-align:center;
+}
+
+.user-box h3{
+    margin-bottom:10px;
+}
+
+.logout{
+    background:#dc2626;
+    margin-top:10px;
+}
+
+.hidden{
+    display:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="card">
+
+```
+<div class="logo">
+    <h1>Business P&L</h1>
+    <p>Inventory & Profit Management</p>
+</div>
+
+<div id="authArea">
+
+    <div class="tabs">
+        <button class="active" id="loginTab">Login</button>
+        <button id="signupTab">Sign Up</button>
+    </div>
+
+    <input type="email" id="email" placeholder="Email Address">
+
+    <input type="password" id="password" placeholder="Password">
+
+    <button class="action-btn" id="submitBtn">
+        Login
+    </button>
+
+    <div class="message" id="message"></div>
+
+</div>
+
+<div class="user-box" id="userBox">
+    <h3>Logged In</h3>
+    <p id="userEmail"></p>
+
+    <button class="action-btn"
+        onclick="goToDashboard()">
+        Open Dashboard
+    </button>
+
+    <button class="action-btn logout"
+        onclick="logout()">
+        Logout
+    </button>
+</div>
+```
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabase =
+window.supabase.createClient(
+'https://ngxlgkbuambtpptpqwnz.supabase.co',
+'PASTE_YOUR_ANON_KEY_HERE'
+);
+
+let mode = "login";
+
+const loginTab =
+document.getElementById("loginTab");
+
+const signupTab =
+document.getElementById("signupTab");
+
+const submitBtn =
+document.getElementById("submitBtn");
+
+loginTab.onclick = () => {
+
+    mode = "login";
+
+    loginTab.classList.add("active");
+    signupTab.classList.remove("active");
+
+    submitBtn.innerText = "Login";
+};
+
+signupTab.onclick = () => {
+
+    mode = "signup";
+
+    signupTab.classList.add("active");
+    loginTab.classList.remove("active");
+
+    submitBtn.innerText = "Create Account";
+};
+
+submitBtn.onclick = async () => {
+
+    const email =
+    document.getElementById("email").value;
+
+    const password =
+    document.getElementById("password").value;
+
+    const msg =
+    document.getElementById("message");
+
+    if(mode === "signup"){
+
+        const { error } =
+        await supabase.auth.signUp({
+            email,
+            password
+        });
+
+        msg.innerText =
+        error ? error.message :
+        "Account created. Check email.";
+
+    }else{
+
+        const { error } =
+        await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        msg.innerText =
+        error ? error.message :
+        "Login successful";
+    }
+};
+
+async function logout(){
+
+    await supabase.auth.signOut();
+
+    location.reload();
+}
+
+function goToDashboard(){
+
+    window.location.href =
+    "index.html";
+}
+
+supabase.auth.onAuthStateChange(
+(event,session)=>{
+
+    if(session){
+
+        document
+        .getElementById("authArea")
+        .style.display="none";
+
+        document
+        .getElementById("userBox")
+        .style.display="block";
+
+        document
+        .getElementById("userEmail")
+        .innerText =
+        session.user.email;
+
+    }
+});
+
+</script>
+
+</body>
+
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Business P&L</title>
