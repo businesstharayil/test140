@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Business P&L</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -1910,220 +1909,6 @@ body.dark .hero-amount.positive{color:var(--accent);}
 /* ── INV ENHANCEMENT CSS (keep from previous) ── */
 .svh-chart{display:flex;align-items:flex-end;gap:5px;height:100px;}
 .svh-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;}
-
-/* ══════════════════════════════════════════
-   AUTH SCREENS
-══════════════════════════════════════════ */
-#auth-screen{
-  position:fixed;inset:0;
-  background-color:#f0f2f7;
-  background-image:
-    linear-gradient(rgba(180,195,230,.55) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(180,195,230,.55) 1px,transparent 1px),
-    linear-gradient(rgba(180,195,230,.2) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(180,195,230,.2) 1px,transparent 1px);
-  background-size:40px 40px,40px 40px,8px 8px,8px 8px;
-  z-index:9000;
-  display:flex;align-items:center;justify-content:center;
-  padding:20px;
-  font-family:'Geist',sans-serif;
-}
-#auth-screen.hidden{display:none;}
-
-.auth-box{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:32px 28px 28px;
-  width:100%;max-width:400px;
-  box-shadow:0 4px 32px rgba(60,80,140,.10);
-}
-.auth-logo{
-  font-family:'Instrument Serif',serif;
-  font-size:28px;color:var(--accent);
-  text-align:center;margin-bottom:4px;
-}
-.auth-tagline{
-  font-size:12px;color:var(--text3);
-  text-align:center;margin-bottom:28px;
-  letter-spacing:.3px;
-}
-.auth-tabs{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:4px;background:var(--card);
-  border-radius:10px;padding:4px;
-  margin-bottom:24px;
-}
-.auth-tab{
-  padding:9px;border-radius:7px;border:none;
-  background:transparent;color:var(--text3);
-  font-family:'Geist',sans-serif;font-size:13px;
-  font-weight:500;cursor:pointer;transition:all var(--trans);
-}
-.auth-tab.active{
-  background:var(--surface);color:var(--text);
-  box-shadow:0 1px 4px var(--shadow);font-weight:600;
-}
-.auth-form{display:flex;flex-direction:column;gap:12px;}
-.auth-field label{
-  display:block;font-size:9px;letter-spacing:1px;
-  text-transform:uppercase;color:var(--text3);
-  font-weight:600;margin-bottom:5px;
-}
-.auth-field input{
-  width:100%;background:var(--card);
-  border:1.5px solid var(--border);border-radius:10px;
-  padding:12px 14px;color:var(--text);
-  font-family:'Geist',sans-serif;font-size:15px;
-  outline:none;transition:border-color var(--trans),box-shadow var(--trans);
-}
-.auth-field input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-light);
-}
-.auth-btn{
-  width:100%;padding:14px;border-radius:11px;border:none;
-  font-family:'Geist',sans-serif;font-size:14px;font-weight:700;
-  cursor:pointer;margin-top:4px;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  color:#fff;
-  box-shadow:0 2px 0 var(--accent2),0 4px 12px var(--accent-glow);
-  transition:all var(--trans);
-}
-.auth-btn:hover{transform:translateY(-1px);}
-.auth-btn:active{transform:translateY(1px);}
-.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.auth-error{
-  background:var(--red-bg);color:var(--red);
-  border:1px solid rgba(200,48,64,.2);
-  border-radius:8px;padding:10px 12px;
-  font-size:12px;text-align:center;
-  display:none;
-}
-.auth-error.show{display:block;}
-
-/* Setup screen */
-.setup-box{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:32px 28px 28px;
-  width:100%;max-width:440px;
-  box-shadow:0 4px 32px rgba(60,80,140,.10);
-}
-.setup-title{
-  font-family:'Instrument Serif',serif;
-  font-size:24px;font-weight:400;color:var(--text);
-  margin-bottom:6px;
-}
-.setup-sub{font-size:12px;color:var(--text3);margin-bottom:24px;line-height:1.6;}
-.setup-step{
-  display:flex;align-items:center;gap:8px;
-  font-size:11px;color:var(--text3);
-  margin-bottom:20px;
-}
-.setup-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--border2);flex-shrink:0;
-}
-.setup-dot.active{background:var(--accent);}
-
-/* App loading */
-#app-loading{
-  position:fixed;inset:0;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  z-index:8999;flex-direction:column;gap:12px;
-}
-#app-loading.hidden{display:none;}
-.loading-logo{
-  font-family:'Instrument Serif',serif;
-  font-size:32px;color:var(--accent);
-}
-.loading-spin{
-  width:24px;height:24px;border-radius:50%;
-  border:2px solid var(--border);
-  border-top-color:var(--accent);
-  animation:spin .7s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* User avatar in nav */
-.nav-user{
-  display:flex;align-items:center;gap:6px;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:99px;padding:4px 10px 4px 5px;
-  cursor:pointer;transition:all var(--trans);flex-shrink:0;
-}
-.nav-user:hover{border-color:var(--accent);}
-.nav-avatar{
-  width:24px;height:24px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:#fff;flex-shrink:0;
-}
-.nav-user-name{
-  font-size:11px;font-weight:500;color:var(--text2);
-  max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-
-/* Business switcher */
-.biz-switcher{
-  position:absolute;top:54px;right:12px;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;padding:8px;
-  box-shadow:0 4px 20px var(--shadow);
-  z-index:300;min-width:200px;
-  animation:fadeUp .2s ease;
-}
-.biz-switcher.hidden{display:none;}
-.biz-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 11px;border-radius:9px;
-  cursor:pointer;transition:all var(--trans);
-  border:none;background:transparent;
-  width:100%;text-align:left;
-}
-.biz-item:hover{background:var(--card);}
-.biz-item.active-biz{background:var(--accent-light);}
-.biz-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--border2);flex-shrink:0;
-}
-.biz-item.active-biz .biz-dot{background:var(--accent);}
-.biz-name{font-size:13px;font-weight:500;color:var(--text);}
-.biz-type{font-size:10px;color:var(--text3);}
-.biz-add-btn{
-  width:100%;padding:9px 11px;border-radius:9px;
-  border:1.5px dashed var(--border2);background:transparent;
-  color:var(--text3);font-family:'Geist',sans-serif;
-  font-size:12px;cursor:pointer;transition:all var(--trans);
-  margin-top:4px;
-}
-.biz-add-btn:hover{border-color:var(--accent);color:var(--accent);}
-
-/* Sync indicator */
-.sync-badge{
-  font-size:9px;padding:2px 7px;border-radius:99px;
-  font-family:'Geist Mono',monospace;font-weight:600;
-  position:fixed;bottom:28px;right:14px;z-index:400;
-  transition:all .3s;
-}
-.sync-badge.syncing{background:var(--orange-bg);color:var(--orange);border:1px solid rgba(192,72,32,.2);}
-.sync-badge.synced{background:var(--green-bg);color:var(--green);border:1px solid rgba(26,158,96,.2);}
-.sync-badge.error{background:var(--red-bg);color:var(--red);border:1px solid rgba(200,48,64,.2);}
-.sync-badge.hidden{display:none;}
-
-body.dark #auth-screen{
-  background-color:#0c0f1a;
-  background-image:
-    linear-gradient(rgba(60,80,180,.22) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(60,80,180,.22) 1px,transparent 1px),
-    linear-gradient(rgba(60,80,180,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(60,80,180,.08) 1px,transparent 1px);
-  background-size:40px 40px,40px 40px,8px 8px,8px 8px;
-}
-
 </style>
 </head>
 <body>
@@ -2136,7 +1921,7 @@ body.dark #auth-screen{
 <aside class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-brand" onclick="closeSidebar();showPage('dashboard')">
-      <span id="sb-brand-name">WIKAGO</span>
+      <span id="sb-brand-name">BizDesk</span>
     </div>
     <button class="sb-close" onclick="closeSidebar()">×</button>
   </div>
@@ -2201,110 +1986,12 @@ body.dark #auth-screen{
 </aside>
 
 <!-- TOP NAV — primary 4 + hamburger -->
-
-<!-- APP LOADING -->
-<div id="app-loading" style="display:flex;">
-  <div class="loading-logo">WIKAGO</div>
-  <div class="loading-spin"></div>
-</div>
-
-<!-- AUTH SCREEN -->
-<div id="auth-screen" class="hidden">
-  <div id="auth-box-wrap">
-    <!-- Login / Signup box -->
-    <div class="auth-box" id="auth-login-box">
-      <div class="auth-logo">WIKAGO</div>
-      <div class="auth-tagline">Your complete business dashboard</div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
-        <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
-      </div>
-      <div class="auth-error" id="auth-error"></div>
-      <div class="auth-form">
-        <div class="auth-field">
-          <label>Email</label>
-          <input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email" />
-        </div>
-        <div class="auth-field">
-          <label>Password</label>
-          <input type="password" id="auth-password" placeholder="Min 6 characters" autocomplete="current-password" />
-        </div>
-        <div class="auth-field" id="auth-name-field" style="display:none;">
-          <label>Your Name</label>
-          <input type="text" id="auth-name" placeholder="e.g. Misab" />
-        </div>
-        <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">Sign In</button>
-      </div>
-    </div>
-
-    <!-- Business Setup box -->
-    <div class="setup-box" id="auth-setup-box" style="display:none;">
-      <div class="setup-title">Set up your business</div>
-      <div class="setup-sub">Tell us about your business to personalize your dashboard. You can change this anytime in Settings.</div>
-      <div class="auth-error" id="setup-error"></div>
-      <div class="auth-form">
-        <div class="auth-field">
-          <label>Business / Brand Name *</label>
-          <input type="text" id="setup-biz-name" placeholder="e.g. ILLUMITREND" />
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div class="auth-field">
-            <label>Business Type</label>
-            <select id="setup-biz-type" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 12px;color:var(--text);font-family:'Geist',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;">
-              <option>E-Commerce</option>
-              <option>Retail / Walk-in</option>
-              <option>Wholesale</option>
-              <option>Manufacturing</option>
-              <option>Services</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="auth-field">
-            <label>Industry</label>
-            <select id="setup-industry" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 12px;color:var(--text);font-family:'Geist',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;">
-              <option>Home Lighting</option>
-              <option>Electronics</option>
-              <option>Fashion</option>
-              <option>Home Improvement</option>
-              <option>Beauty & Health</option>
-              <option>Food & Beverage</option>
-              <option>Furniture</option>
-              <option>Other</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div class="auth-field">
-            <label>City</label>
-            <input type="text" id="setup-city" placeholder="e.g. Malappuram" />
-          </div>
-          <div class="auth-field">
-            <label>State</label>
-            <input type="text" id="setup-state" placeholder="e.g. Kerala" />
-          </div>
-        </div>
-        <div class="auth-field">
-          <label>Phone / WhatsApp</label>
-          <input type="text" id="setup-phone" placeholder="e.g. 9876543210" />
-        </div>
-        <button class="auth-btn" id="setup-submit-btn" onclick="handleSetup()">Launch Dashboard →</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- BUSINESS SWITCHER DROPDOWN -->
-<div class="biz-switcher hidden" id="biz-switcher"></div>
-
-<!-- SYNC BADGE -->
-<div class="sync-badge hidden" id="sync-badge">Syncing…</div>
-
 <nav class="nav">
   <button class="hamburger" id="hamburger-btn" onclick="openSidebar()" title="Menu">
     <span></span><span></span><span></span>
   </button>
   <button style="background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;" onclick="showPage('dashboard')" title="Dashboard">
-    <span class="nav-brand" id="nav-brand-name">WIKAGO</span>
+    <span class="nav-brand" id="nav-brand-name">BizDesk</span>
   </button>
   <div class="nav-spacer"></div>
   <button class="nav-tab active" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button>
@@ -2312,10 +1999,6 @@ body.dark #auth-screen{
   <button class="nav-tab" data-page="analytics" onclick="showPage('analytics')">Analytics</button>
   <button class="nav-tab" data-page="financial" onclick="showPage('financial')">Finance</button>
   <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-  <div class="nav-user" id="nav-user" onclick="toggleBizSwitcher()" style="display:none;">
-    <div class="nav-avatar" id="nav-avatar">U</div>
-    <span class="nav-user-name" id="nav-user-name">Account</span>
-  </div>
 </nav>
 
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
@@ -3316,10 +2999,6 @@ body.dark #auth-screen{
         <div class="sr-left"><div class="sr-label">Reset Everything</div><div class="sr-sub">Wipe all data including inventory & purchases</div></div>
         <div class="sr-right"><button class="danger-btn" onclick="resetAll()">Reset All</button></div>
       </div>
-      <div class="setting-row">
-        <div class="sr-left"><div class="sr-label">Sign Out</div><div class="sr-sub">Log out of your account</div></div>
-        <div class="sr-right"><button class="danger-btn" onclick="logOut()">Sign Out</button></div>
-      </div>
     </div>
   </div>
 
@@ -3459,7 +3138,9 @@ if(!D.drafts) D.drafts=[];
 if(!D.purchases) D.purchases=[];
 // migrate from v6
 const _v6=localStorage.getItem('biz_pl_v6');
-if(_v6&&!localStorage.getItem('biz_pl_v7_migrated')){try{const old6=JSON.parse(_v6);D.orders=old6.orders||[];D.misc=old6.misc||[];D.inventory=old6.inventory||[];D.remittance=old6.remittance||[];save();localStorage.setItem('biz_pl_v7_migrated','1');}catch(e){}}
+if(_v6&&!localStorage.getItem('biz_pl_v7_migrated')){try{const old6=JSON.parse(_v6);D.orders=old6.orders||[];D.misc=old6.misc||[];D.inventory=old6.inventory||[];D.remittance=old6.remittance||[];
+
+();localStorage.setItem('biz_pl_v7_migrated','1');}catch(e){}}
 let miscType='income', entryFilter='all', adjType='add';
 let selInvProd=null, selChannel='', lastOrder=null, selAgg='', selCourier='';
 
@@ -3510,7 +3191,88 @@ function showPage(id){
 // ─── HELPERS ───
 const fmt=n=>'₹'+Math.abs(n).toLocaleString('en-IN',{maximumFractionDigits:2});
 const v=id=>parseFloat(document.getElementById(id).value)||0;
-const save=()=>localStorage.setItem('biz_pl_v8',JSON.stringify(D));
+const save = async () => {
+
+  // Keep local backup
+  localStorage.setItem(
+    'biz_pl_v8',
+    JSON.stringify(D)
+  );
+
+  try {
+
+    const { data:{ user } } =
+      await supabase.auth.getUser();
+
+    if(!user) return;
+
+    const { data: business } =
+      await supabase
+        .from('businesses')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+    if(!business) return;
+
+    const businessId = business.id;
+
+    // ORDERS
+    if(D.orders?.length){
+      await supabase
+        .from('orders')
+        .upsert(
+          D.orders.map(o => ({
+            business_id: businessId,
+            local_id: o.id,
+            data: o
+          }))
+        );
+    }
+
+    // INVENTORY
+    if(D.inventory?.length){
+      await supabase
+        .from('inventory')
+        .upsert(
+          D.inventory.map(i => ({
+            business_id: businessId,
+            local_id: i.id,
+            data: i
+          }))
+        );
+    }
+
+    // PURCHASES
+    if(D.purchases?.length){
+      await supabase
+        .from('purchases')
+        .upsert(
+          D.purchases.map(p => ({
+            business_id: businessId,
+            local_id: p.id,
+            data: p
+          }))
+        );
+    }
+
+    // REMITTANCE
+    if(D.remittance?.length){
+      await supabase
+        .from('remittances')
+        .upsert(
+          D.remittance.map(r => ({
+            business_id: businessId,
+            local_id: r.id,
+            data: r
+          }))
+        );
+    }
+
+  } catch(err){
+    console.error('SYNC ERROR', err);
+  }
+};
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ─── CHANNEL SELECT ───
@@ -4504,6 +4266,7 @@ function getCurrentFormState(){
 function loadFormState(s){
   document.getElementById('o-name').value=s.name||'';
   document.getElementById('o-price').value=s.price||'';
+
   document.getElementById('o-qty').value=s.qty||1;
   document.getElementById('o-cost').value=s.costPerUnit||'';
   document.getElementById('o-payment').value=s.isCod?'cod':'prepaid';
@@ -5628,247 +5391,20 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape') closeSidebar();
 });
 
-// ─── INIT (UI only) ───
+// ─── INIT ───
 toggleShipping();
 calcPreview();
+renderDashboard();
 populateProductDropdown();
 updateBadges();
+// load saved config
+loadCfg();
+// restore accent color
+(()=>{const ac=localStorage.getItem('biz_accent');if(ac)applyAccentColor(ac,false);})();
+// init purchase page first row
 addPurchaseItemRow();
 document.getElementById('pur-date').value=new Date().toISOString().split('T')[0];
-(()=>{const ac=localStorage.getItem('biz_accent');if(ac)applyAccentColor(ac,false);})();
-
-// ══════════════════════════════════════════════
-// SUPABASE — WIKAGO
-// ══════════════════════════════════════════════
-const SUPA_URL='https://ngxlgkbuambtpptpqwnz.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5neGxna2J1YW1idHBwdHBxd256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDc0MTMsImV4cCI6MjA5NTc4MzQxM30.DMie1zNgSSxoqo1G7ZxXfqHnvXVO7BkdEP_wJ1URTOg';
-const supa=supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-
-let currentUser=null,currentBizId=null,allBusinesses=[],authMode='login',syncTimer=null,syncInProgress=false;
-
-function switchAuthTab(mode){
-  authMode=mode;
-  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&mode==='login')||(i===1&&mode==='signup')));
-  document.getElementById('auth-submit-btn').textContent=mode==='login'?'Sign In':'Create Account';
-  const nf=document.getElementById('auth-name-field');if(nf)nf.style.display=mode==='signup'?'block':'none';
-  const er=document.getElementById('auth-error');if(er)er.classList.remove('show');
-}
-function showAuthError(msg){const el=document.getElementById('auth-error');if(el){el.textContent=msg;el.classList.add('show');}}
-
-async function handleAuth(){
-  const email=document.getElementById('auth-email').value.trim();
-  const pass=document.getElementById('auth-password').value;
-  const nameEl=document.getElementById('auth-name');
-  const name=nameEl?nameEl.value.trim():'';
-  if(!email||!pass){showAuthError('Enter email and password');return;}
-  if(pass.length<6){showAuthError('Password must be at least 6 characters');return;}
-  const btn=document.getElementById('auth-submit-btn');
-  btn.disabled=true;btn.textContent='Please wait…';
-  try{
-    let res;
-    if(authMode==='signup'){
-      res=await supa.auth.signUp({email,password:pass,options:{data:{name}}});
-      if(res.error)throw res.error;
-      // After signup with no email confirm, session may need a moment
-      // Try signing in immediately to get a valid session
-      if(!res.data.user || !res.data.session){
-        const signInRes=await supa.auth.signInWithPassword({email,password:pass});
-        if(signInRes.error)throw signInRes.error;
-        currentUser=signInRes.data.user;
-      } else {
-        currentUser=res.data.user;
-      }
-    }else{
-      res=await supa.auth.signInWithPassword({email,password:pass});
-      if(res.error)throw res.error;
-      currentUser=res.data.user;
-    }
-    const {data:biz}=await supa.from('businesses').select('id').eq('user_id',currentUser.id).limit(1);
-    if(!biz||!biz.length){showSetupScreen();}
-    else{await loadBusinesses();await launchApp();}
-  }catch(e){
-    showAuthError(e.message||'Something went wrong');
-    btn.disabled=false;btn.textContent=authMode==='login'?'Sign In':'Create Account';
-  }
-}
-
-function showSetupScreen(){
-  const lb=document.getElementById('auth-login-box');const sb=document.getElementById('auth-setup-box');
-  if(lb)lb.style.display='none';if(sb)sb.style.display='block';
-}
-
-async function handleSetup(){
-  const bizName=document.getElementById('setup-biz-name').value.trim();
-  if(!bizName){const e=document.getElementById('setup-error');if(e){e.textContent='Enter your business name';e.classList.add('show');}return;}
-  const btn=document.getElementById('setup-submit-btn');btn.disabled=true;btn.textContent='Setting up…';
-  try{
-    const cfg={'biz-name':bizName,'biz-type':document.getElementById('setup-biz-type').value,industry:document.getElementById('setup-industry').value,city:document.getElementById('setup-city').value.trim(),state:document.getElementById('setup-state').value.trim(),phone:document.getElementById('setup-phone').value.trim()};
-    const {data,error}=await supa.from('businesses').insert({user_id:currentUser.id,name:bizName,type:cfg['biz-type'],settings:cfg}).select().single();
-    if(error)throw error;
-    await loadBusinesses();
-    localStorage.setItem('biz_cfg',JSON.stringify(cfg));
-    await launchApp();
-  }catch(e){
-    const el=document.getElementById('setup-error');if(el){el.textContent=e.message||'Setup failed';el.classList.add('show');}
-    btn.disabled=false;btn.textContent='Launch Dashboard →';
-  }
-}
-
-async function loadBusinesses(){
-  const {data}=await supa.from('businesses').select('*').eq('user_id',currentUser.id).order('created_at');
-  allBusinesses=data||[];
-  if(allBusinesses.length){
-    const saved=localStorage.getItem('current_biz_id');
-    const found=saved&&allBusinesses.find(b=>b.id===saved);
-    currentBizId=found?saved:allBusinesses[0].id;
-    localStorage.setItem('current_biz_id',currentBizId);
-  }
-}
-
-async function launchApp(){
-  document.getElementById('auth-screen').classList.add('hidden');
-  const loader=document.getElementById('app-loading');
-  loader.style.display='flex';
-  const logoEl=loader.querySelector('.loading-logo');
-  if(logoEl)logoEl.textContent='WIKAGO';
-  try{
-    await loadDataFromSupabase();
-    updateNavUser();
-    const biz=allBusinesses.find(b=>b.id===currentBizId);
-    if(biz){
-      const br=document.getElementById('nav-brand-name');if(br)br.textContent=biz.name.length>14?biz.name.slice(0,14)+'…':biz.name;
-      const sb=document.getElementById('sb-brand-name');if(sb)sb.textContent=biz.name;
-      if(biz.settings)localStorage.setItem('biz_cfg',JSON.stringify(biz.settings));
-    }
-  }catch(e){console.error('Load error',e);}
-  loader.style.display='none';
-  renderDashboard();loadCfg();
-  const ac=localStorage.getItem('biz_accent');if(ac)applyAccentColor(ac,false);
-}
-
-async function loadDataFromSupabase(){
-  if(!currentBizId)return;
-  const bid=currentBizId;
-  const [o,m,inv,rem,pur,tpl,drft]=await Promise.all([
-    supa.from('orders').select('*').eq('business_id',bid).order('created_at',{ascending:false}),
-    supa.from('misc_entries').select('*').eq('business_id',bid).order('created_at',{ascending:false}),
-    supa.from('inventory').select('*').eq('business_id',bid),
-    supa.from('remittances').select('*').eq('business_id',bid).order('created_at',{ascending:false}),
-    supa.from('purchases').select('*').eq('business_id',bid).order('created_at',{ascending:false}),
-    supa.from('templates').select('*').eq('business_id',bid),
-    supa.from('drafts').select('*').eq('business_id',bid),
-  ]);
-  D.orders=(o.data||[]).map(r=>({id:r.id,name:r.product_name,price:+r.price,qty:+r.qty,costPerUnit:+r.cost_per_unit,payment:r.payment_type,ship:+r.shipping,codFee:+r.cod_fee,plat:+r.platform_fee,ads:+r.ad_spend,ret:+r.returns,other:+r.other_deduction,revenue:+r.revenue,totalCost:+r.total_cost,net:+r.net_profit,channel:r.channel,aggregator:r.aggregator,courier:r.courier,notes:r.notes,gst:+r.gst_pct,invProductId:r.inventory_product_id,date:r.order_date?new Date(r.order_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})}));
-  D.misc=(m.data||[]).map(r=>({id:r.id,name:r.name,amount:+r.amount,type:r.entry_type,category:r.category,date:r.entry_date?new Date(r.entry_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})}));
-  D.inventory=(inv.data||[]).map(r=>({id:r.id,name:r.name,price:+r.selling_price,cost:+r.cost_price,stock:+r.stock,lowAlert:+r.low_alert,sku:r.sku,supplier:r.supplier||{},stockHistory:r.stock_history||[]}));
-  D.remittance=(rem.data||[]).map(r=>({id:r.id,channel:r.channel,amount:+r.amount,status:r.status,ref:r.reference,notes:r.notes,date:r.remittance_date?new Date(r.remittance_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})}));
-  D.purchases=(pur.data||[]).map(r=>({id:r.id,date:r.purchase_date?new Date(r.purchase_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}),supplier:r.supplier||{},invoice:r.invoice_number,payMode:r.payment_mode,paidAmount:+r.paid_amount,items:r.items||[],prodTotal:+r.prod_total,shipping:+r.shipping,other:+r.other_charges,gstPct:+r.gst_pct,gstAmt:+r.gst_amount,total:+r.total,creditDue:+r.credit_due,notes:r.notes}));
-  D.templates=(tpl.data||[]).map(r=>({id:r.id,tplName:r.name,...(r.config||{})}));
-  D.drafts=(drft.data||[]).map(r=>({id:r.id,...(r.config||{})}));
-}
-
-// Override save to also push to Supabase
-const _localSave=()=>localStorage.setItem('biz_pl_v8',JSON.stringify(D));
-window.save=function(){_localSave();if(currentBizId)scheduleSyncToSupabase();};
-
-function scheduleSyncToSupabase(){clearTimeout(syncTimer);syncTimer=setTimeout(syncToSupabase,1500);showSyncBadge('syncing');}
-
-async function syncToSupabase(){
-  if(!currentBizId||syncInProgress)return;
-  syncInProgress=true;
-  try{
-    const bid=currentBizId;
-    await supa.from('orders').delete().eq('business_id',bid);
-    if(D.orders.length)await supa.from('orders').insert(D.orders.map(o=>({business_id:bid,product_name:o.name,price:o.price,qty:o.qty,cost_per_unit:o.costPerUnit,payment_type:o.payment,shipping:o.ship,cod_fee:o.codFee,platform_fee:o.plat,ad_spend:o.ads,returns:o.ret,other_deduction:o.other,revenue:o.revenue,total_cost:o.totalCost,net_profit:o.net,channel:o.channel||'Other',aggregator:o.aggregator||null,courier:o.courier||null,notes:o.notes||null,gst_pct:o.gst||0,inventory_product_id:o.invProductId||null,order_date:new Date().toISOString().split('T')[0]})));
-    await supa.from('misc_entries').delete().eq('business_id',bid);
-    if(D.misc.length)await supa.from('misc_entries').insert(D.misc.map(m=>({business_id:bid,name:m.name,amount:m.amount,entry_type:m.type,category:m.category,entry_date:new Date().toISOString().split('T')[0]})));
-    await supa.from('inventory').delete().eq('business_id',bid);
-    if(D.inventory.length)await supa.from('inventory').insert(D.inventory.map(p=>({business_id:bid,name:p.name,selling_price:p.price,cost_price:p.cost,stock:p.stock,low_alert:p.lowAlert,sku:p.sku||null,supplier:p.supplier||{},stock_history:p.stockHistory||[]})));
-    await supa.from('remittances').delete().eq('business_id',bid);
-    if(D.remittance.length)await supa.from('remittances').insert(D.remittance.map(r=>({business_id:bid,channel:r.channel,amount:r.amount,status:r.status,reference:r.ref||null,notes:r.notes||null,remittance_date:new Date().toISOString().split('T')[0]})));
-    await supa.from('purchases').delete().eq('business_id',bid);
-    if(D.purchases.length)await supa.from('purchases').insert(D.purchases.map(p=>({business_id:bid,supplier:p.supplier||{},invoice_number:p.invoice||null,items:p.items||[],prod_total:p.prodTotal,shipping:p.shipping,other_charges:p.other,gst_pct:p.gstPct,gst_amount:p.gstAmt,total:p.total,payment_mode:p.payMode,paid_amount:p.paidAmount||0,credit_due:p.creditDue||0,notes:p.notes||null,purchase_date:new Date().toISOString().split('T')[0]})));
-    await supa.from('templates').delete().eq('business_id',bid);
-    if(D.templates.length)await supa.from('templates').insert(D.templates.map(t=>({business_id:bid,name:t.tplName||'Template',config:t})));
-    await supa.from('drafts').delete().eq('business_id',bid);
-    if(D.drafts.length)await supa.from('drafts').insert(D.drafts.map(d=>({business_id:bid,config:d})));
-    showSyncBadge('synced');setTimeout(hideSyncBadge,2500);
-  }catch(e){console.error('Sync error',e);showSyncBadge('error');}
-  syncInProgress=false;
-}
-
-function showSyncBadge(s){const el=document.getElementById('sync-badge');if(!el)return;el.className='sync-badge '+s;el.textContent=s==='syncing'?'↑ Syncing…':s==='synced'?'✓ Saved':'⚠ Sync error';}
-function hideSyncBadge(){const el=document.getElementById('sync-badge');if(el)el.className='sync-badge hidden';}
-
-function updateNavUser(){
-  const el=document.getElementById('nav-user');if(!el)return;
-  if(currentUser){
-    el.style.display='flex';
-    const name=currentUser.user_metadata?.name||currentUser.email||'U';
-    const av=document.getElementById('nav-avatar');if(av)av.textContent=name.charAt(0).toUpperCase();
-    const nm=document.getElementById('nav-user-name');if(nm)nm.textContent=name.split(' ')[0]||currentUser.email.split('@')[0];
-  }else{el.style.display='none';}
-}
-
-function toggleBizSwitcher(){const el=document.getElementById('biz-switcher');if(!el)return;el.classList.toggle('hidden');if(!el.classList.contains('hidden'))renderBizSwitcher();}
-function renderBizSwitcher(){
-  const el=document.getElementById('biz-switcher');if(!el)return;
-  el.innerHTML=allBusinesses.map(b=>`<button class="biz-item ${b.id===currentBizId?'active-biz':''}" onclick="switchBusiness('${b.id}')"><div class="biz-dot"></div><div><div class="biz-name">${b.name}</div><div class="biz-type">${b.type||''}</div></div></button>`).join('')+`<button class="biz-add-btn" onclick="addNewBusiness()">＋ Add Business</button>`;
-}
-async function switchBusiness(id){
-  currentBizId=id;localStorage.setItem('current_biz_id',id);
-  document.getElementById('biz-switcher').classList.add('hidden');
-  const loader=document.getElementById('app-loading');loader.style.display='flex';
-  const _sl=loader.querySelector('.loading-logo');if(_sl)_sl.textContent='Switching…';
-  await loadDataFromSupabase();
-  const biz=allBusinesses.find(b=>b.id===id);
-  if(biz){const br=document.getElementById('nav-brand-name');if(br)br.textContent=biz.name;if(biz.settings)localStorage.setItem('biz_cfg',JSON.stringify(biz.settings));}
-  loader.style.display='none';
-  renderDashboard();loadCfg();showToast('Switched to '+(biz?.name||'business'));
-}
-function addNewBusiness(){
-  document.getElementById('biz-switcher').classList.add('hidden');
-  document.getElementById('auth-login-box').style.display='none';
-  document.getElementById('auth-setup-box').style.display='block';
-  document.getElementById('auth-screen').classList.remove('hidden');
-}
-document.addEventListener('click',e=>{
-  const sw=document.getElementById('biz-switcher');const nu=document.getElementById('nav-user');
-  if(sw&&!sw.classList.contains('hidden')&&!sw.contains(e.target)&&e.target!==nu&&!(nu&&nu.contains(e.target)))sw.classList.add('hidden');
-});
-
-async function logOut(){
-  if(!confirm('Sign out?'))return;
-  await supa.auth.signOut();
-  currentUser=null;currentBizId=null;allBusinesses=[];
-  D={orders:[],misc:[],inventory:[],remittance:[],templates:[],drafts:[],purchases:[]};
-  document.getElementById('auth-login-box').style.display='block';
-  document.getElementById('auth-setup-box').style.display='none';
-  document.getElementById('auth-screen').classList.remove('hidden');
-  switchAuthTab('login');showToast('Signed out');
-}
-
-// ── Bootstrap ──
-(async function(){
-  try{
-    const {data:{session}}=await supa.auth.getSession();
-    if(session){
-      currentUser=session.user;
-      await loadBusinesses();
-      if(allBusinesses.length){await launchApp();}
-      else{document.getElementById('app-loading').style.display='none';document.getElementById('auth-screen').classList.remove('hidden');showSetupScreen();}
-    }else{
-      document.getElementById('app-loading').style.display='none';
-      document.getElementById('auth-screen').classList.remove('hidden');
-    }
-  }catch(e){
-    console.error('Bootstrap error',e);
-    document.getElementById('app-loading').style.display='none';
-    document.getElementById('auth-screen').classList.remove('hidden');
-  }
-})();
-
-['auth-email','auth-password','auth-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')handleAuth();});});
+renderPurchaseList();
 </script>
 
 <!-- EDIT ORDER MODAL -->
