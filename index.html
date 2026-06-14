@@ -3294,8 +3294,8 @@ body.dark #auth-screen{
         <div class="sr-right"><span class="version-badge">v8.0 · Built with ❤️</span></div>
       </div>
       <div class="setting-row">
-        <div class="sr-left"><div class="sr-label">Data Storage</div><div class="sr-sub">All data is stored locally on this device</div></div>
-        <div class="sr-right" style="font-size:10px;color:var(--text3);">LocalStorage</div>
+        <div class="sr-left"><div class="sr-label">Data Storage</div><div class="sr-sub">All data is synced to Supabase cloud storage</div></div>
+        <div class="sr-right" style="font-size:10px;color:var(--text3);">Supabase Cloud</div>
       </div>
       <div class="setting-row" style="border-bottom:none;">
         <div class="sr-left"><div class="sr-label">Total Data Size</div></div>
@@ -5773,21 +5773,36 @@ window.save=function(){_localSave();if(currentBizId)scheduleSyncToSupabase();};
 
 function scheduleSyncToSupabase(){clearTimeout(syncTimer);syncTimer=setTimeout(syncToSupabase,1500);showSyncBadge('syncing');}
 
+// Convert stored date string "17 May 25" → "2025-05-17"
+function parseDateToISO(dateStr){
+  if(!dateStr) return new Date().toISOString().split('T')[0];
+  if(dateStr.includes('-')) return dateStr;
+  const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  const p=dateStr.split(' ');
+  if(p.length>=3){
+    const day=p[0].padStart(2,'0');
+    const month=months[p[1]]||'01';
+    const year='20'+p[2];
+    return `${year}-${month}-${day}`;
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
 async function syncToSupabase(){
   if(!currentBizId||syncInProgress)return;
   syncInProgress=true;
   try{
     const bid=currentBizId;
     await supa.from('orders').delete().eq('business_id',bid);
-    if(D.orders.length)await supa.from('orders').insert(D.orders.map(o=>({business_id:bid,product_name:o.name,price:o.price,qty:o.qty,cost_per_unit:o.costPerUnit,payment_type:o.payment,shipping:o.ship,cod_fee:o.codFee,platform_fee:o.plat,ad_spend:o.ads,returns:o.ret,other_deduction:o.other,revenue:o.revenue,total_cost:o.totalCost,net_profit:o.net,channel:o.channel||'Other',aggregator:o.aggregator||null,courier:o.courier||null,notes:o.notes||null,gst_pct:o.gst||0,inventory_product_id:o.invProductId||null,order_date:new Date().toISOString().split('T')[0]})));
+    if(D.orders.length)await supa.from('orders').insert(D.orders.map(o=>({business_id:bid,product_name:o.name,price:o.price,qty:o.qty,cost_per_unit:o.costPerUnit,payment_type:o.payment,shipping:o.ship,cod_fee:o.codFee,platform_fee:o.plat,ad_spend:o.ads,returns:o.ret,other_deduction:o.other,revenue:o.revenue,total_cost:o.totalCost,net_profit:o.net,channel:o.channel||'Other',aggregator:o.aggregator||null,courier:o.courier||null,notes:o.notes||null,gst_pct:o.gst||0,inventory_product_id:o.invProductId||null,order_date:parseDateToISO(o.date)})));
     await supa.from('misc_entries').delete().eq('business_id',bid);
-    if(D.misc.length)await supa.from('misc_entries').insert(D.misc.map(m=>({business_id:bid,name:m.name,amount:m.amount,entry_type:m.type,category:m.category,entry_date:new Date().toISOString().split('T')[0]})));
+    if(D.misc.length)await supa.from('misc_entries').insert(D.misc.map(m=>({business_id:bid,name:m.name,amount:m.amount,entry_type:m.type,category:m.category,entry_date:parseDateToISO(m.date)})));
     await supa.from('inventory').delete().eq('business_id',bid);
     if(D.inventory.length)await supa.from('inventory').insert(D.inventory.map(p=>({business_id:bid,name:p.name,selling_price:p.price,cost_price:p.cost,stock:p.stock,low_alert:p.lowAlert,sku:p.sku||null,supplier:p.supplier||{},stock_history:p.stockHistory||[]})));
     await supa.from('remittances').delete().eq('business_id',bid);
-    if(D.remittance.length)await supa.from('remittances').insert(D.remittance.map(r=>({business_id:bid,channel:r.channel,amount:r.amount,status:r.status,reference:r.ref||null,notes:r.notes||null,remittance_date:new Date().toISOString().split('T')[0]})));
+    if(D.remittance.length)await supa.from('remittances').insert(D.remittance.map(r=>({business_id:bid,channel:r.channel,amount:r.amount,status:r.status,reference:r.ref||null,notes:r.notes||null,remittance_date:parseDateToISO(r.date)})));
     await supa.from('purchases').delete().eq('business_id',bid);
-    if(D.purchases.length)await supa.from('purchases').insert(D.purchases.map(p=>({business_id:bid,supplier:p.supplier||{},invoice_number:p.invoice||null,items:p.items||[],prod_total:p.prodTotal,shipping:p.shipping,other_charges:p.other,gst_pct:p.gstPct,gst_amount:p.gstAmt,total:p.total,payment_mode:p.payMode,paid_amount:p.paidAmount||0,credit_due:p.creditDue||0,notes:p.notes||null,purchase_date:new Date().toISOString().split('T')[0]})));
+    if(D.purchases.length)await supa.from('purchases').insert(D.purchases.map(p=>({business_id:bid,supplier:p.supplier||{},invoice_number:p.invoice||null,items:p.items||[],prod_total:p.prodTotal,shipping:p.shipping,other_charges:p.other,gst_pct:p.gstPct,gst_amount:p.gstAmt,total:p.total,payment_mode:p.payMode,paid_amount:p.paidAmount||0,credit_due:p.creditDue||0,notes:p.notes||null,purchase_date:parseDateToISO(p.date)})));
     await supa.from('templates').delete().eq('business_id',bid);
     if(D.templates.length)await supa.from('templates').insert(D.templates.map(t=>({business_id:bid,name:t.tplName||'Template',config:t})));
     await supa.from('drafts').delete().eq('business_id',bid);
