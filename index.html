@@ -5229,7 +5229,14 @@ const ACCENT_COLORS = {
 };
 
 function loadCfg(){
-  const cfg = JSON.parse(localStorage.getItem('biz_cfg')||'{}');
+  // Prefer settings from Supabase (already in memory via allBusinesses)
+  const biz = allBusinesses.find(b=>b.id===currentBizId);
+  const supaSettings = biz?.settings || {};
+  const localCfg = JSON.parse(localStorage.getItem('biz_cfg')||'{}');
+  const cfg = Object.keys(supaSettings).length ? supaSettings : localCfg;
+  // Write merged result back to localStorage
+  if(Object.keys(cfg).length) localStorage.setItem('biz_cfg', JSON.stringify(cfg));
+
   // fill form fields
   ['name','role','phone','email','biz-name','city','state','address','website','gstin','pan','bank-name','bank-acc','ifsc','upi'].forEach(k=>{
     const el=document.getElementById('cfg-'+k);
@@ -5288,6 +5295,31 @@ function saveCfgLive(){
   // sync fixed costs to break-even
   const be=document.getElementById('be-fixed');
   if(be) be.value=cfg.fixedCosts;
+  // sync settings to Supabase (debounced)
+  if(currentBizId) scheduleCfgSync(cfg);
+}
+
+let cfgSyncTimer = null;
+function scheduleCfgSync(cfg){
+  clearTimeout(cfgSyncTimer);
+  cfgSyncTimer = setTimeout(()=>syncCfgToSupabase(cfg), 1500);
+}
+
+async function syncCfgToSupabase(cfg){
+  if(!currentBizId) return;
+  try{
+    const bizName = cfg['biz-name'] || allBusinesses.find(b=>b.id===currentBizId)?.name || 'My Business';
+    // also update in-memory so loadCfg picks it up immediately on next call
+    const biz = allBusinesses.find(b=>b.id===currentBizId);
+    if(biz){ biz.name = bizName; biz.settings = cfg; }
+    const {error} = await supa.from('businesses').update({
+      name: bizName,
+      settings: cfg
+    }).eq('id', currentBizId);
+    if(error) console.error('Settings sync error:', error);
+  }catch(e){
+    console.error('Settings sync failed:', e);
+  }
 }
 
 function updateProfileDisplay(cfg){
