@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Business P&L</title>
+<title>WIKAGO</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -3448,8 +3448,18 @@ body.dark #auth-screen{
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE — Supabase is sole source of truth ───
-let D = {orders:[],misc:[],inventory:[],remittance:[],templates:[],drafts:[],purchases:[]};
+// ─── STATE ───
+let D = JSON.parse(localStorage.getItem('biz_pl_v8')||'{"orders":[],"misc":[],"inventory":[],"remittance":[],"templates":[],"drafts":[],"purchases":[]}');
+// migrate v7
+const _v7=localStorage.getItem('biz_pl_v7');if(_v7&&!localStorage.getItem('biz_pl_v8_migrated')){try{const o=JSON.parse(_v7);Object.assign(D,{orders:o.orders||[],misc:o.misc||[],inventory:o.inventory||[],remittance:o.remittance||[],templates:o.templates||[],drafts:o.drafts||[]});save();localStorage.setItem('biz_pl_v8_migrated','1');}catch(e){}}
+if(!D.inventory) D.inventory=[];
+if(!D.remittance) D.remittance=[];
+if(!D.templates) D.templates=[];
+if(!D.drafts) D.drafts=[];
+if(!D.purchases) D.purchases=[];
+// migrate from v6
+const _v6=localStorage.getItem('biz_pl_v6');
+if(_v6&&!localStorage.getItem('biz_pl_v7_migrated')){try{const old6=JSON.parse(_v6);D.orders=old6.orders||[];D.misc=old6.misc||[];D.inventory=old6.inventory||[];D.remittance=old6.remittance||[];save();localStorage.setItem('biz_pl_v7_migrated','1');}catch(e){}}
 let miscType='income', entryFilter='all', adjType='add';
 let selInvProd=null, selChannel='', lastOrder=null, selAgg='', selCourier='';
 
@@ -3500,7 +3510,7 @@ function showPage(id){
 // ─── HELPERS ───
 const fmt=n=>'₹'+Math.abs(n).toLocaleString('en-IN',{maximumFractionDigits:2});
 const v=id=>parseFloat(document.getElementById(id).value)||0;
-const save=()=>{if(typeof scheduleSyncToSupabase==='function'&&currentBizId)scheduleSyncToSupabase();};
+const save=()=>localStorage.setItem('biz_pl_v8',JSON.stringify(D));
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ─── CHANNEL SELECT ───
@@ -5332,8 +5342,9 @@ function renderSettings(){
   document.getElementById('set-purchases').textContent = D.purchases?.length||0;
   document.getElementById('set-products').textContent = D.inventory.length;
   // data size
-  const totalRecs=D.orders.length+D.inventory.length+D.purchases.length+D.misc.length+D.remittance.length+D.templates.length+D.drafts.length;
-  document.getElementById('set-data-size').textContent=totalRecs+' records (Supabase)';
+  const size = new Blob([localStorage.getItem('biz_pl_v8')||'']).size;
+  const sizeStr = size > 1024 ? (size/1024).toFixed(1)+' KB' : size+' B';
+  document.getElementById('set-data-size').textContent = sizeStr;
   // dark toggle sync
   const darkToggle=document.getElementById('pref-dark');
   if(darkToggle) darkToggle.checked=document.body.classList.contains('dark');
@@ -5402,29 +5413,13 @@ function importJSON(event){
   reader.readAsText(file);
 }
 
-async function resetAll(){
+function resetAll(){
   if(!confirm('RESET EVERYTHING? This will delete ALL orders, inventory, purchases, and settings. This cannot be undone.'))return;
   if(!confirm('Are you absolutely sure? All data will be lost permanently.'))return;
-  if(currentBizId){
-    showToast('Deleting all data from Supabase…');
-    const bid=currentBizId;
-    await Promise.all([
-      supa.from('orders').delete().eq('business_id',bid),
-      supa.from('misc_entries').delete().eq('business_id',bid),
-      supa.from('inventory').delete().eq('business_id',bid),
-      supa.from('remittances').delete().eq('business_id',bid),
-      supa.from('purchases').delete().eq('business_id',bid),
-      supa.from('templates').delete().eq('business_id',bid),
-      supa.from('drafts').delete().eq('business_id',bid),
-    ]);
-    await supa.from('businesses').update({settings:{}}).eq('id',bid);
-  }
+  localStorage.removeItem('biz_pl_v8');
   localStorage.removeItem('biz_cfg');
   localStorage.removeItem('biz_accent');
-  localStorage.removeItem('current_biz_id');
-  D={orders:[],misc:[],inventory:[],remittance:[],templates:[],drafts:[],purchases:[]};
-  renderDashboard();renderInventory();
-  showToast('✓ All data deleted');
+  location.reload();
 }
 
 
@@ -5805,7 +5800,8 @@ async function loadDataFromSupabase(){
 }
 
 // Override save to also push to Supabase
-// save() defined above — Supabase only, no localStorage
+const _localSave=()=>localStorage.setItem('biz_pl_v8',JSON.stringify(D));
+window.save=function(){_localSave();if(currentBizId)scheduleSyncToSupabase();};
 
 function scheduleSyncToSupabase(){clearTimeout(syncTimer);syncTimer=setTimeout(syncToSupabase,1500);showSyncBadge('syncing');}
 
@@ -5829,50 +5825,27 @@ async function syncToSupabase(){
   syncInProgress=true;
   try{
     const bid=currentBizId;
-    // helper: run a supabase op and throw if it errors
-    const run=async(label,op)=>{const{error}=await op;if(error)throw new Error(label+': '+error.message);};
-
-    await run('orders.del',    supa.from('orders').delete().eq('business_id',bid));
-    if(D.orders.length)
-      await run('orders.ins',  supa.from('orders').insert(D.orders.map(o=>({business_id:bid,product_name:o.name||'',price:o.price||0,qty:o.qty||1,cost_per_unit:o.costPerUnit||0,payment_type:o.payment||'cod',shipping:o.ship||0,cod_fee:o.codFee||0,platform_fee:o.plat||0,ad_spend:o.ads||0,returns:o.ret||0,other_deduction:o.other||0,revenue:o.revenue||0,total_cost:o.totalCost||0,net_profit:o.net||0,channel:o.channel||'Other',aggregator:o.aggregator||null,courier:o.courier||null,notes:o.notes||null,gst_pct:o.gst||0,inventory_product_id:null,order_date:parseDateToISO(o.date)}))));
-
-    await run('misc.del',      supa.from('misc_entries').delete().eq('business_id',bid));
-    if(D.misc.length)
-      await run('misc.ins',    supa.from('misc_entries').insert(D.misc.map(m=>({business_id:bid,name:m.name||'',amount:m.amount||0,entry_type:m.type||'expense',category:m.category||'Other',entry_date:parseDateToISO(m.date)}))));
-
-    await run('inv.del',       supa.from('inventory').delete().eq('business_id',bid));
-    if(D.inventory.length)
-      await run('inv.ins',     supa.from('inventory').insert(D.inventory.map(p=>({business_id:bid,name:p.name||'',selling_price:p.price||0,cost_price:p.cost||0,stock:p.stock||0,low_alert:p.lowAlert||5,sku:p.sku||null,supplier:p.supplier||{},stock_history:p.stockHistory||[]}))));
-
-    await run('rem.del',       supa.from('remittances').delete().eq('business_id',bid));
-    if(D.remittance.length)
-      await run('rem.ins',     supa.from('remittances').insert(D.remittance.map(r=>({business_id:bid,channel:r.channel||'Other',amount:r.amount||0,status:r.status||'pending',reference:r.ref||null,notes:r.notes||null,remittance_date:parseDateToISO(r.date)}))));
-
-    await run('pur.del',       supa.from('purchases').delete().eq('business_id',bid));
-    if(D.purchases.length)
-      await run('pur.ins',     supa.from('purchases').insert(D.purchases.map(p=>({business_id:bid,supplier:p.supplier||{},invoice_number:p.invoice||null,items:p.items||[],prod_total:p.prodTotal||0,shipping:p.shipping||0,other_charges:p.other||0,gst_pct:p.gstPct||0,gst_amount:p.gstAmt||0,total:p.total||0,payment_mode:p.payMode||'paid',paid_amount:p.paidAmount||0,credit_due:p.creditDue||0,notes:p.notes||null,purchase_date:parseDateToISO(p.date)}))));
-
-    await run('tpl.del',       supa.from('templates').delete().eq('business_id',bid));
-    if(D.templates.length)
-      await run('tpl.ins',     supa.from('templates').insert(D.templates.map(t=>({business_id:bid,name:t.tplName||'Template',config:t}))));
-
-    await run('drft.del',      supa.from('drafts').delete().eq('business_id',bid));
-    if(D.drafts.length)
-      await run('drft.ins',    supa.from('drafts').insert(D.drafts.map(d=>({business_id:bid,config:d}))));
-
+    await supa.from('orders').delete().eq('business_id',bid);
+    if(D.orders.length)await supa.from('orders').insert(D.orders.map(o=>({business_id:bid,product_name:o.name,price:o.price,qty:o.qty,cost_per_unit:o.costPerUnit,payment_type:o.payment,shipping:o.ship,cod_fee:o.codFee,platform_fee:o.plat,ad_spend:o.ads,returns:o.ret,other_deduction:o.other,revenue:o.revenue,total_cost:o.totalCost,net_profit:o.net,channel:o.channel||'Other',aggregator:o.aggregator||null,courier:o.courier||null,notes:o.notes||null,gst_pct:o.gst||0,inventory_product_id:o.invProductId||null,order_date:parseDateToISO(o.date)})));
+    await supa.from('misc_entries').delete().eq('business_id',bid);
+    if(D.misc.length)await supa.from('misc_entries').insert(D.misc.map(m=>({business_id:bid,name:m.name,amount:m.amount,entry_type:m.type,category:m.category,entry_date:parseDateToISO(m.date)})));
+    await supa.from('inventory').delete().eq('business_id',bid);
+    if(D.inventory.length)await supa.from('inventory').insert(D.inventory.map(p=>({business_id:bid,name:p.name,selling_price:p.price,cost_price:p.cost,stock:p.stock,low_alert:p.lowAlert,sku:p.sku||null,supplier:p.supplier||{},stock_history:p.stockHistory||[]})));
+    await supa.from('remittances').delete().eq('business_id',bid);
+    if(D.remittance.length)await supa.from('remittances').insert(D.remittance.map(r=>({business_id:bid,channel:r.channel,amount:r.amount,status:r.status,reference:r.ref||null,notes:r.notes||null,remittance_date:parseDateToISO(r.date)})));
+    await supa.from('purchases').delete().eq('business_id',bid);
+    if(D.purchases.length)await supa.from('purchases').insert(D.purchases.map(p=>({business_id:bid,supplier:p.supplier||{},invoice_number:p.invoice||null,items:p.items||[],prod_total:p.prodTotal,shipping:p.shipping,other_charges:p.other,gst_pct:p.gstPct,gst_amount:p.gstAmt,total:p.total,payment_mode:p.payMode,paid_amount:p.paidAmount||0,credit_due:p.creditDue||0,notes:p.notes||null,purchase_date:parseDateToISO(p.date)})));
+    await supa.from('templates').delete().eq('business_id',bid);
+    if(D.templates.length)await supa.from('templates').insert(D.templates.map(t=>({business_id:bid,name:t.tplName||'Template',config:t})));
+    await supa.from('drafts').delete().eq('business_id',bid);
+    if(D.drafts.length)await supa.from('drafts').insert(D.drafts.map(d=>({business_id:bid,config:d})));
     showSyncBadge('synced');setTimeout(hideSyncBadge,2500);
-  }catch(e){
-    console.error('Sync failed:',e.message||e);
-    showSyncBadge('error',e.message||'Unknown error');
-    // auto-retry after 5 seconds
-    setTimeout(()=>scheduleSyncToSupabase(), 5000);
-  }finally{
-    syncInProgress=false;
-  }
+  }catch(e){console.error('Sync error',e);showSyncBadge('error');}
+  syncInProgress=false;
 }
 
-function showSyncBadge(s,msg){const el=document.getElementById('sync-badge');if(!el)return;el.className='sync-badge '+s;el.textContent=s==='syncing'?'↑ Syncing…':s==='synced'?'✓ Saved':'⚠ Sync error · Retrying…';if(msg)el.title=msg;}
-function hideSyncBadge(){const el=document.getElementById('sync-badge');if(el){el.className='sync-badge hidden';el.title='';}}
+function showSyncBadge(s){const el=document.getElementById('sync-badge');if(!el)return;el.className='sync-badge '+s;el.textContent=s==='syncing'?'↑ Syncing…':s==='synced'?'✓ Saved':'⚠ Sync error';}
+function hideSyncBadge(){const el=document.getElementById('sync-badge');if(el)el.className='sync-badge hidden';}
 
 function updateNavUser(){
   const el=document.getElementById('nav-user');if(!el)return;
