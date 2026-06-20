@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WIKAGO</title>
+<title>Business P&L</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -2125,6 +2126,32 @@ body.dark #auth-screen{
   background-size:40px 40px,40px 40px,8px 8px,8px 8px;
 }
 
+/* ── LABEL MAKER ── */
+.lm-pill{padding:5px 13px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:99px;cursor:pointer;background:var(--bg);color:var(--text2);transition:all .13s;font-family:inherit;}
+.lm-pill.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.lm-pill:not(.on):hover{border-color:var(--accent);color:var(--text);}
+.lm-label-card{border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.lm-card-head{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card);border-bottom:1px solid var(--border);}
+.lm-card-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lm-card-name{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lm-card-name.empty{color:var(--text3);font-style:italic;font-weight:400;}
+.lm-lbl{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;border:2px solid #000;display:flex;flex-direction:column;}
+.lm-lbl-head{border-bottom:2px solid #000;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.lm-lbl-hc{flex:1;text-align:center;}
+.lm-lbl-ship{font-weight:700;text-transform:uppercase;text-decoration:underline;letter-spacing:.8px;}
+.lm-lbl-cid{font-weight:700;text-decoration:underline;margin-top:2px;}
+.lm-lbl-logo{max-height:34px;max-width:76px;object-fit:contain;}
+.lm-lbl-pay{border-bottom:1.5px solid #000;padding:5px 10px;font-weight:700;}
+.lm-lbl-pay.cod{background:#fff8f3;}.lm-lbl-pay.pre{background:#f3fff7;}
+.lm-lbl-addrs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #000;flex:1;}
+.lm-lbl-from{border-right:1.5px solid #000;padding:7px 9px;line-height:1.5;}
+.lm-lbl-to{padding:7px 9px;line-height:1.5;}
+.lm-lbl-atag{font-weight:700;}
+.lm-lbl-aname{font-weight:700;text-decoration:underline;margin-top:1px;margin-bottom:2px;display:block;}
+.lm-lbl-contact{font-weight:700;margin-top:3px;display:block;}
+.lm-lbl-foot{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;gap:8px;}
+.lm-lbl-prod{font-weight:700;}
+
 </style>
 </head>
 <body>
@@ -2192,6 +2219,9 @@ body.dark #auth-screen{
     </button>
     <button class="sb-item" data-page="settings" onclick="closeSidebar();showPage('settings')">
       <span class="sb-icon">⬛</span>Settings
+    </button>
+    <button class="sb-item" data-page="labels" onclick="closeSidebar();showPage('labels')">
+      <span class="sb-icon">⬛</span>Label Maker
     </button>
   </div>
 
@@ -3327,6 +3357,158 @@ body.dark #auth-screen{
 </div>
 </div>
 
+<!-- ═══════════════ LABEL MAKER PAGE ═══════════════ -->
+<div class="page" id="page-labels">
+<div style="height:100%;overflow:hidden;display:flex;flex-direction:column;">
+
+<!-- Label Maker Header -->
+<div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;background:var(--card);">
+  <div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);">🏷️ Label Maker</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:1px;">Create shipping labels for your orders</div>
+  </div>
+  <div style="display:flex;gap:7px;align-items:center;">
+    <button onclick="lm_addRow()" style="font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;">+ Add Row</button>
+    <button onclick="lm_clearAll()" style="font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;">Clear</button>
+    <button onclick="lm_printAll()" style="font-size:12px;padding:6px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🖨 Print All</button>
+  </div>
+</div>
+
+<!-- Label Maker Body -->
+<div style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px;">
+
+  <!-- Sender Card -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">📦 Sender Details</div>
+      <button onclick="lm_openSender()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;">Edit</button>
+    </div>
+    <div onclick="lm_openSender()" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <div style="width:38px;height:38px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+        <img id="lm_avatarThumb" style="max-width:38px;max-height:38px;object-fit:contain;display:none;" alt="logo">
+        <span id="lm_avatarIcon" style="font-size:18px;">🏢</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div id="lm_senderName" style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">FOAMORA</div>
+        <div id="lm_senderAddr" style="font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ummathoor School Paramba, Malappuram</div>
+      </div>
+      <span style="color:var(--text3);font-size:14px;">›</span>
+    </div>
+  </div>
+
+  <!-- Hidden sender fields -->
+  <div style="display:none;">
+    <input id="lm_sFrom" value="FOAMORA">
+    <textarea id="lm_aFrom">Ummathoor School Paramba,
+Malappuram - 676505
+Kerala, INDIA</textarea>
+    <input id="lm_eFrom" value="suportfoamora@gmail.com">
+    <input id="lm_mFrom" value="8714346852">
+  </div>
+
+  <!-- Order Defaults -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">⚙️ Order Defaults</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">Shipping Type</div>
+          <input id="lm_shipType" value="SPEED POST" oninput="lm_render()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">Customer ID</div>
+          <input id="lm_custId" value="1717892280" oninput="lm_render()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+        </div>
+      </div>
+      <!-- Payment Toggle -->
+      <div>
+        <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">Payment Type</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <button id="lm_btnCod" onclick="lm_setPay('cod')" style="padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff7ed;color:#c2410c;font-family:inherit;">💰 COD</button>
+          <button id="lm_btnPre" onclick="lm_setPay('pre')" style="padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;border-left:1px solid var(--border);background:var(--bg);color:var(--text3);font-family:inherit;">✅ Prepaid</button>
+        </div>
+      </div>
+      <div id="lm_codFields" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">Amount (₹)</div>
+            <input id="lm_codAmt" type="number" value="149" oninput="lm_autoCodWords();lm_render()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">Amount in words</div>
+            <input id="lm_codWords" value="One Hundred And Forty Nine Rupees Only" oninput="lm_render()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Labels List -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">📋 Labels <span id="lm_bulkCount" style="font-size:11px;color:var(--text3);font-weight:400;">1 label</span></div>
+      <button onclick="lm_addRow()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">+ Add</button>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+      <div id="lm_labelCards" style="display:flex;flex-direction:column;gap:7px;"></div>
+    </div>
+  </div>
+
+  <!-- QR Code -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">◼ QR Code</div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <span style="font-size:12px;color:var(--text3);">Show QR</span>
+        <input type="checkbox" id="lm_qrEnabled" checked onchange="lm_toggleQr()" style="accent-color:var(--accent);width:16px;height:16px;">
+      </label>
+    </div>
+    <div id="lm_qrFields" style="padding:12px 14px;">
+      <div style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;">QR Content</div>
+      <input id="lm_qrContent" value="1717892280" oninput="lm_render()" placeholder="Order ID, URL, phone…" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+    </div>
+  </div>
+
+  <!-- Print Size -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">📐 Print Size</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="lm-pill on" onclick="lm_setSize('6x4',this)">6×4 in</button>
+        <button class="lm-pill" onclick="lm_setSize('4x6',this)">4×6 in</button>
+        <button class="lm-pill" onclick="lm_setSize('4x4',this)">4×4 in</button>
+        <button class="lm-pill" onclick="lm_setSize('a5',this)">A5</button>
+        <button class="lm-pill" onclick="lm_setSize('a4',this)">A4</button>
+        <button class="lm-pill" onclick="lm_setSize('custom',this)">Custom</button>
+      </div>
+      <div id="lm_cwh" style="display:none;align-items:center;gap:8px;">
+        <input type="number" id="lm_cW" value="6" min="1" max="30" step="0.5" oninput="lm_render()" style="width:64px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;text-align:center;">
+        <span style="color:var(--text3);">×</span>
+        <input type="number" id="lm_cH" value="4" min="1" max="40" step="0.5" oninput="lm_render()" style="width:64px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;text-align:center;">
+        <span style="font-size:12px;color:var(--text3);">inches</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">👁 Preview</div>
+      <span id="lm_cntBadge" style="font-size:11px;background:var(--accent);color:#fff;padding:2px 10px;border-radius:99px;font-weight:500;">1 label</span>
+    </div>
+    <div style="padding:14px;overflow-x:auto;">
+      <div id="lm_labelsStack" style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;"></div>
+    </div>
+  </div>
+
+</div><!-- end body scroll -->
+</div><!-- end flex col -->
+</div><!-- end page-labels -->
+
 <!-- ═══════════════ ORDERS DRAWER (from channel card) ═══════════════ -->
 <div class="drawer-overlay hidden" id="drawer-overlay" onclick="closeDrawer(event)">
   <div class="drawer">
@@ -3487,6 +3669,7 @@ function showPage(id){
   if(id==='purchase'){populatePurchaseDropdowns();renderPurchaseList();}
   if(id==='analytics')renderAnalytics();
   if(id==='settings')renderSettings();
+  if(id==='labels'){if(typeof lm_init==='function')lm_init();setTimeout(lm_render,100);}
   // hide bottom bar only on order page
   const bottomBar=document.getElementById('mobile-bottom-bar');
   if(bottomBar){
@@ -3596,8 +3779,8 @@ function populateProductDropdown(){
 }
 
 function selectInventoryProduct(){
-  const id=parseInt(document.getElementById('o-inv-select').value);
-  const prod=D.inventory.find(p=>p.id===id);
+  const id=String(document.getElementById('o-inv-select').value);
+  const prod=D.inventory.find(p=>String(p.id)===id);
   const box=document.getElementById('o-selected-prod');
   if(!prod){selInvProd=null;box.style.display='none';return;}
   selInvProd=prod;
@@ -3685,7 +3868,7 @@ function addOrder(){
     const _o=buildOrderObj(name,price,qty,costPerUnit,isCod,ship,codFee,plat,ads,ret,other,selChannel||'Other',selInvProd?.id,selAgg,selCourier,v('o-gst'),document.getElementById('o-gst-mode')?.value,_notes);
     _o.id=Date.now()+_i;
     D.orders.unshift(_o);
-    if(selInvProd){const _p=D.inventory.find(p=>p.id===selInvProd.id);if(_p)_p.stock=Math.max(0,_p.stock-qty);}
+    if(selInvProd){const _sid=String(selInvProd.id);const _p=D.inventory.find(p=>String(p.id)===_sid);if(_p)_p.stock=Math.max(0,_p.stock-qty);}
   }
   save();
 
@@ -3764,6 +3947,7 @@ function addMisc(){
   D.misc.unshift({id:Date.now(),name,amount,type:miscType,category:document.getElementById('m-category').value,date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})});
   save();
   document.getElementById('m-name').value='';document.getElementById('m-amount').value='';
+  renderEntries();renderDashboard();
   showToast('✓ Entry added');showPage('dashboard');
 }
 
@@ -3799,18 +3983,19 @@ function renderRemittance(){
       <div><div style="font-size:12px;font-weight:600;">${ico} ${r.channel}</div><div style="font-size:10px;color:var(--text3);margin-top:2px;">${r.date}${r.ref?' · '+r.ref:''}${r.note?' · '+r.note:''}</div></div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;color:${r.status==='received'?'var(--green)':'var(--orange)'};">${fmt(r.amount)}</span>
-        <span class="re-status ${r.status}" onclick="toggleRemStatus(${r.id})" style="cursor:pointer;">${r.status==='received'?'Received':'Pending'}</span>
-        <button class="del-btn" onclick="deleteRem(${r.id})">×</button>
+        <span class="re-status ${r.status}" onclick="toggleRemStatus('${r.id}')" style="cursor:pointer;">${r.status==='received'?'Received':'Pending'}</span>
+        <button class="del-btn" onclick="deleteRem('${r.id}')">×</button>
       </div>
     </div>`;
   }).join('');
 }
 
 function toggleRemStatus(id){
-  const r=D.remittance.find(x=>x.id===id);
+  const sid=String(id);
+  const r=D.remittance.find(x=>String(x.id)===sid);
   if(r){r.status=r.status==='pending'?'received':'pending';save();renderRemittance();renderDashboard();showToast('Status updated');}
 }
-function deleteRem(id){D.remittance=D.remittance.filter(r=>r.id!==id);save();renderRemittance();renderDashboard();showToast('Deleted');}
+function deleteRem(id){const sid=String(id);D.remittance=D.remittance.filter(r=>String(r.id)!==sid);save();renderRemittance();renderDashboard();showToast('Deleted');}
 
 // ─── INVENTORY ───
 function openAddProduct(){
@@ -3821,9 +4006,10 @@ function openAddProduct(){
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
 function openEditProduct(id){
-  const prod=D.inventory.find(p=>p.id===id);if(!prod)return;
+  const sid=String(id);
+  const prod=D.inventory.find(p=>String(p.id)===sid);if(!prod)return;
   document.getElementById('modal-title').textContent='Edit Product';
-  document.getElementById('edit-prod-id').value=id;
+  document.getElementById('edit-prod-id').value=sid;
   document.getElementById('p-name').value=prod.name;
   document.getElementById('p-price').value=prod.price;
   document.getElementById('p-cost').value=prod.cost;
@@ -3852,8 +4038,8 @@ function saveProduct(){
     moq:parseInt(document.getElementById('p-sup-moq').value)||0,
     notes:document.getElementById('p-sup-notes').value.trim(),
   };
-  const editId=parseInt(document.getElementById('edit-prod-id').value);
-  if(editId){const idx=D.inventory.findIndex(p=>p.id===editId);if(idx>-1)D.inventory[idx]={...D.inventory[idx],name,price,cost,stock,lowAlert,sku,supplier};}
+  const editId=document.getElementById('edit-prod-id').value;
+  if(editId){const sid=String(editId);const idx=D.inventory.findIndex(p=>String(p.id)===sid);if(idx>-1)D.inventory[idx]={...D.inventory[idx],name,price,cost,stock,lowAlert,sku,supplier};}
   else{
     // snapshot stock value for history
     const newProd={id:Date.now(),name,price,cost,stock,lowAlert,sku,supplier,stockHistory:[{date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}),value:stock*cost,stock}]};
@@ -3861,10 +4047,11 @@ function saveProduct(){
   }
   save();closeModalDirect();renderInventory();showToast(editId?'✓ Updated':'✓ Product added');
 }
-function deleteProduct(id){if(!confirm('Delete?'))return;D.inventory=D.inventory.filter(p=>p.id!==id);save();renderInventory();showToast('Deleted');}
+function deleteProduct(id){if(!confirm('Delete?'))return;const sid=String(id);D.inventory=D.inventory.filter(p=>String(p.id)!==sid);save();renderInventory();showToast('Deleted');}
 function openAdjustStock(id){
-  const prod=D.inventory.find(p=>p.id===id);if(!prod)return;
-  document.getElementById('adj-prod-id').value=id;
+  const sid=String(id);
+  const prod=D.inventory.find(p=>String(p.id)===sid);if(!prod)return;
+  document.getElementById('adj-prod-id').value=sid;
   document.getElementById('adj-prod-name').textContent=prod.name+' — Stock: '+prod.stock;
   document.getElementById('adj-qty').value='';
   document.getElementById('adj-note').value='';
@@ -3873,10 +4060,11 @@ function openAdjustStock(id){
 }
 function setAdjType(t){adjType=t;document.getElementById('adj-btn-add').className='tt-btn'+(t==='add'?' ti':'');document.getElementById('adj-btn-remove').className='tt-btn'+(t==='remove'?' te':'');}
 function adjustStock(){
-  const id=parseInt(document.getElementById('adj-prod-id').value);
+  const id=document.getElementById('adj-prod-id').value;
   const qty=parseInt(document.getElementById('adj-qty').value)||0;
   if(!qty){showToast('⚠ Enter quantity');return;}
-  const prod=D.inventory.find(p=>p.id===id);if(!prod)return;
+  const sid=String(id);
+  const prod=D.inventory.find(p=>String(p.id)===sid);if(!prod)return;
   prod.stock=adjType==='add'?prod.stock+qty:Math.max(0,prod.stock-qty);
   if(!prod.stockHistory)prod.stockHistory=[];
   prod.stockHistory.push({date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}),value:prod.stock*prod.cost,stock:prod.stock});
@@ -3910,7 +4098,7 @@ function renderInventory(){
       const bc=p.stock<=0?'out':p.stock<=p.lowAlert?'low':'ok';
       const bl=p.stock<=0?'Out of Stock':p.stock<=p.lowAlert?`Low: ${p.stock}`:`${p.stock} units`;
       const supLine=p.supplier?.name?` · 🏭 ${p.supplier.name}`:'';
-      return`<div class="inv-item ${sc}"><div><div class="ii-name">${p.name}${p.sku?` <span style="font-size:9px;color:var(--text3);font-weight:400">${p.sku}</span>`:''}</div><div class="ii-meta">Cost ₹${p.cost} · Price ₹${p.price} · Alert: ${p.lowAlert}${supLine}</div></div><div class="ii-right"><span class="stock-badge ${bc}">${bl}</span><div class="ii-actions"><button class="ia-btn" onclick="openAdjustStock(${p.id})">±</button><button class="ia-btn edit" onclick="openEditProduct(${p.id})">✎</button><button class="ia-btn del" onclick="deleteProduct(${p.id})">×</button></div></div></div>`;
+      return`<div class="inv-item ${sc}"><div><div class="ii-name">${p.name}${p.sku?` <span style="font-size:9px;color:var(--text3);font-weight:400">${p.sku}</span>`:''}</div><div class="ii-meta">Cost ₹${p.cost} · Price ₹${p.price} · Alert: ${p.lowAlert}${supLine}</div></div><div class="ii-right"><span class="stock-badge ${bc}">${bl}</span><div class="ii-actions"><button class="ia-btn" onclick="openAdjustStock('${p.id}')">±</button><button class="ia-btn edit" onclick="openEditProduct('${p.id}')">✎</button><button class="ia-btn del" onclick="deleteProduct('${p.id}')">×</button></div></div></div>`;
     }).join('');
   }
 
@@ -3936,7 +4124,7 @@ function renderInventory(){
         </div>
         <div class="ri-right">
           <span class="restock-badge ${badge}">${badgeLabel}</span>
-          <button class="restock-btn" onclick="openAdjustStock(${p.id})">+ Restock</button>
+          <button class="restock-btn" onclick="openAdjustStock('${p.id}')">+ Restock</button>
         </div>
       </div>`;
     }).join('');
@@ -4004,7 +4192,7 @@ function renderInventory(){
         <div>
           <div class="sup-prod-name">${p.name}${p.sku?` <span style="font-size:9px;color:var(--text3)">${p.sku}</span>`:''}</div>
         </div>
-        <button class="sup-edit-btn" onclick="openEditProduct(${p.id})">Edit</button>
+        <button class="sup-edit-btn" onclick="openEditProduct('${p.id}')">Edit</button>
       </div>
       <div class="sup-badges">
         ${p.supplier.name?`<span class="sup-badge name-badge">🏭 ${p.supplier.name}</span>`:''}
@@ -4020,7 +4208,7 @@ function renderInventory(){
     html+=noSup.map(p=>`<div class="supplier-card" style="opacity:.6;border-style:dashed;">
       <div class="sup-top">
         <div class="sup-prod-name">${p.name}</div>
-        <button class="sup-edit-btn" onclick="openEditProduct(${p.id})">+ Add Supplier</button>
+        <button class="sup-edit-btn" onclick="openEditProduct('${p.id}')">+ Add Supplier</button>
       </div>
     </div>`).join('');
   }
@@ -4347,7 +4535,7 @@ function renderOrderCard(item){
   return`<div class="order-entry ${item.net>=0?'profit':'loss'}">
     <div class="oe-top">
       <div><div class="oe-name">${item.name}</div><div class="oe-meta">${item.date} · ${item.payment.toUpperCase()} · Qty ${item.qty}</div></div>
-      <div class="oe-right"><div class="oe-pl">${item.net>=0?'+':'-'}${fmt(item.net)}</div><button class="del-btn" onclick="deleteEntry('order',${item.id})">×</button></div>
+      <div class="oe-right"><div class="oe-pl">${item.net>=0?'+':'-'}${fmt(item.net)}</div><button class="del-btn" onclick="deleteEntry('order','${item.id}')">×</button></div>
     </div>
     <div class="oe-chips">
       <span class="ch-tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${ico} ${item.channel||'Other'}</span>
@@ -4360,9 +4548,9 @@ function renderOrderCard(item){
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center">
       <button class="toggle-bd" onclick="toggleBD(this)">▸ Breakdown</button>
-      <button style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;" onclick="editNote(${item.id})">✏️ Note</button>
+      <button style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;" onclick="editNote('${item.id}')">✏️ Note</button>
     </div>
-    ${item.notes?`<div class="order-note"><span class="note-ico">📝</span><span>${item.notes}</span><button class="note-edit-btn" onclick="editNote(${item.id})">edit</button></div>`:''}
+    ${item.notes?`<div class="order-note"><span class="note-ico">📝</span><span>${item.notes}</span><button class="note-edit-btn" onclick="editNote('${item.id}')">edit</button></div>`:''}
     <div class="oe-breakdown">
       <div class="bd-row"><span>Revenue (${item.qty}×${fmt(item.price)})</span><span style="color:var(--green)">${fmt(item.revenue)}</span></div>
       <div class="bd-row"><span>Product Cost</span><span style="color:var(--red)">−${fmt(item.costPerUnit*item.qty)}</span></div>
@@ -4436,12 +4624,12 @@ function renderEntries(){
       const ico=CHANNELS[item.channel]?.ico||'📦';
       return`<div class="misc-entry cod-rem">
         <div><div class="me-name">${ico} COD Remittance · ${item.channel}</div><div class="me-meta">${item.date}${item.ref?' · '+item.ref:''}${item.note?' · '+item.note:''} · <span style="color:${item.status==='received'?'var(--green)':'var(--orange)'}">${item.status}</span></div></div>
-        <div style="display:flex;align-items:center"><div class="me-amt">${fmt(item.amount)}</div><button class="del-btn" onclick="deleteEntry('rem',${item.id})">×</button></div>
+        <div style="display:flex;align-items:center"><div class="me-amt">${fmt(item.amount)}</div><button class="del-btn" onclick="deleteEntry('rem','${item.id}')">×</button></div>
       </div>`;
     }
     return`<div class="misc-entry ${item.type}">
       <div><div class="me-name">${item.name}</div><div class="me-meta">${item.category} · ${item.date}</div></div>
-      <div style="display:flex;align-items:center"><div class="me-amt">${item.type==='income'?'+':'-'}${fmt(item.amount)}</div><button class="del-btn" onclick="deleteEntry('misc',${item.id})">×</button></div>
+      <div style="display:flex;align-items:center"><div class="me-amt">${item.type==='income'?'+':'-'}${fmt(item.amount)}</div><button class="del-btn" onclick="deleteEntry('misc','${item.id}')">×</button></div>
     </div>`;
   }).join('');
 }
@@ -4449,9 +4637,10 @@ function renderEntries(){
 function toggleBD(btn){const bd=btn.parentElement.nextElementSibling;bd.classList.toggle('open');btn.textContent=bd.classList.contains('open')?'▾ Breakdown':'▸ Breakdown';}
 
 function deleteEntry(type,id){
-  if(type==='order') D.orders=D.orders.filter(o=>o.id!==id);
-  else if(type==='misc') D.misc=D.misc.filter(m=>m.id!==id);
-  else if(type==='rem') D.remittance=D.remittance.filter(r=>r.id!==id);
+  const sid=String(id);
+  if(type==='order') D.orders=D.orders.filter(o=>String(o.id)!==sid);
+  else if(type==='misc') D.misc=D.misc.filter(m=>String(m.id)!==sid);
+  else if(type==='rem') D.remittance=D.remittance.filter(r=>String(r.id)!==sid);
   save();renderEntries();renderDashboard();showToast('Deleted');
 }
 
@@ -4555,21 +4744,23 @@ function renderTemplatesList(){
         <div class="tpl-meta">${ch} · ₹${t.state.price||0} · Cost ₹${t.state.costPerUnit||0} · ${t.date}</div>
       </div>
       <div class="tpl-actions">
-        <button class="tpl-load-btn" onclick="loadTemplate(${t.id})">Load</button>
-        <button class="tpl-del-btn" onclick="deleteTemplate(${t.id})">×</button>
+        <button class="tpl-load-btn" onclick="loadTemplate('${t.id}')">Load</button>
+        <button class="tpl-del-btn" onclick="deleteTemplate('${t.id}')">×</button>
       </div>
     </div>`;
   }).join('');
 }
 function loadTemplate(id){
-  const t=D.templates.find(x=>x.id===id);
+  const sid=String(id);
+  const t=D.templates.find(x=>String(x.id)===sid);
   if(!t)return;
   loadFormState(t.state);
   closeTplModalDirect();
   showToast('✓ Template loaded: '+t.tplName);
 }
 function deleteTemplate(id){
-  D.templates=D.templates.filter(t=>t.id!==id);
+  const sid=String(id);
+  D.templates=D.templates.filter(t=>String(t.id)!==sid);
   save();renderTemplatesList();updateBadges();showToast('Template deleted');
 }
 function closeTplModal(e){if(e.target===document.getElementById('tpl-modal-overlay'))closeTplModalDirect();}
@@ -4600,23 +4791,25 @@ function renderDraftsList(){
         <div class="draft-meta">${ch} · ₹${d.state.price||0} · Saved ${d.date}</div>
       </div>
       <div class="tpl-actions">
-        <button class="tpl-load-btn" onclick="loadDraft(${d.id})" style="border-color:#f59e0b;color:#b45309;">Resume</button>
-        <button class="tpl-del-btn" onclick="deleteDraft(${d.id})">×</button>
+        <button class="tpl-load-btn" onclick="loadDraft('${d.id}')" style="border-color:#f59e0b;color:#b45309;">Resume</button>
+        <button class="tpl-del-btn" onclick="deleteDraft('${d.id}')">×</button>
       </div>
     </div>`;
   }).join('');
 }
 function loadDraft(id){
-  const d=D.drafts.find(x=>x.id===id);
+  const sid=String(id);
+  const d=D.drafts.find(x=>String(x.id)===sid);
   if(!d)return;
   loadFormState(d.state);
   // remove draft after loading
-  D.drafts=D.drafts.filter(x=>x.id!==id);
+  D.drafts=D.drafts.filter(x=>String(x.id)!==sid);
   save();closeDraftModalDirect();updateBadges();
   showToast('✓ Draft loaded');
 }
 function deleteDraft(id){
-  D.drafts=D.drafts.filter(d=>d.id!==id);
+  const sid=String(id);
+  D.drafts=D.drafts.filter(d=>String(d.id)!==sid);
   save();renderDraftsList();updateBadges();showToast('Draft deleted');
 }
 function closeDraftModal(e){if(e.target===document.getElementById('draft-modal-overlay'))closeDraftModalDirect();}
@@ -4933,7 +5126,8 @@ function exportCSV(){
 
 // ─── EDIT NOTE ───
 function editNote(id){
-  const order=D.orders.find(o=>o.id===id);
+  const sid=String(id);
+  const order=D.orders.find(o=>String(o.id)===sid);
   if(!order)return;
   const note=prompt('Add / edit note for this order:',order.notes||'');
   if(note===null)return;
@@ -5032,7 +5226,7 @@ function onPurchaseItemSelect(rowId){
   } else {
     newFields.style.display = 'none';
     if(sel.value){
-      const prod = D.inventory.find(p=>p.id===parseInt(sel.value));
+      const prod = D.inventory.find(p=>String(p.id)===String(sel.value));
       if(prod && !costInput.value) costInput.value = prod.cost;
     }
   }
@@ -5049,8 +5243,8 @@ function getPurchaseRows(){
     const isNew = sel?.value === '__new__';
     const name = isNew
       ? (document.getElementById('new-name-'+rowId)?.value.trim()||'')
-      : (sel?.value ? D.inventory.find(p=>p.id===parseInt(sel.value))?.name||'' : '');
-    rows.push({rowId, invId: isNew?null:parseInt(sel?.value)||null, isNew, name, qty, cost,
+      : (sel?.value ? D.inventory.find(p=>String(p.id)===String(sel.value))?.name||'' : '');
+    rows.push({rowId, invId: isNew?null:(sel?.value||null), isNew, name, qty, cost,
       sellPrice: parseFloat(document.getElementById('new-sell-'+rowId)?.value)||0,
       sku: document.getElementById('new-sku-'+rowId)?.value.trim()||''
     });
@@ -5122,7 +5316,7 @@ function savePurchase(){
       r.invId = newProd.id;
       createdProducts.push(r.name);
     } else if(r.invId){
-      const prod = D.inventory.find(p=>p.id===r.invId);
+      const prod = D.inventory.find(p=>String(p.id)===String(r.invId));
       if(prod){
         prod.stock += r.qty;
         prod.cost = r.cost; // update cost price
@@ -5192,7 +5386,7 @@ function renderPurchaseList(){
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="pe-amount">-${fmt(p.total)}</div>
-          <button class="del-btn" onclick="deletePurchase(${p.id})">×</button>
+          <button class="del-btn" onclick="deletePurchase('${p.id}')">×</button>
         </div>
       </div>
       <div class="pe-chips">
@@ -5212,7 +5406,8 @@ function renderPurchaseList(){
 
 function deletePurchase(id){
   if(!confirm('Delete this purchase? Stock will NOT be reversed.'))return;
-  D.purchases = D.purchases.filter(p=>p.id!==id);
+  const sid=String(id);
+  D.purchases = D.purchases.filter(p=>String(p.id)!==sid);
   save(); renderPurchaseList(); renderDashboard();
   showToast('Deleted');
 }
@@ -5398,16 +5593,14 @@ function importJSON(event){
   const file=event.target.files[0];
   if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try{
       const parsed=JSON.parse(e.target.result);
       if(parsed.D){
         if(!confirm('This will replace ALL current data. Continue?'))return;
         Object.assign(D, parsed.D);
-        save();
         if(parsed.cfg){
           localStorage.setItem('biz_cfg',JSON.stringify(parsed.cfg));
-          // sync cfg to Supabase so other devices get it too
           if(currentBizId){
             const biz=allBusinesses.find(b=>b.id===currentBizId);
             if(biz) biz.settings=parsed.cfg;
@@ -5416,7 +5609,19 @@ function importJSON(event){
           }
         }
         renderDashboard();renderSettings();
-        showToast('✓ Backup restored successfully');
+        showToast('✓ Restoring backup to cloud…');
+        // Sync to Supabase immediately (not debounced) so backup is saved
+        if(currentBizId){
+          try{
+            await syncToSupabase();
+            renderDashboard();renderEntries();renderRemittance();
+            showToast('✓ Backup restored & synced to cloud');
+          }catch(err){
+            showToast('⚠ Restored locally, cloud sync failed');
+          }
+        } else {
+          showToast('✓ Backup restored successfully');
+        }
       } else { showToast('⚠ Invalid backup file'); }
     }catch(err){showToast('⚠ Could not read file');}
   };
@@ -5530,8 +5735,8 @@ function renderEditableOrderCard(item){
       </div>
       <div class="oe-right">
         <div class="oe-pl">${item.net>=0?'+':'-'}${fmt(item.net)}</div>
-        <button class="ia-btn edit" onclick="openEditOrder(${item.id})" title="Edit">✎</button>
-        <button class="del-btn" onclick="deleteOrderFromPage(${item.id})" title="Delete">×</button>
+        <button class="ia-btn edit" onclick="openEditOrder('${item.id}')" title="Edit">✎</button>
+        <button class="del-btn" onclick="deleteOrderFromPage('${item.id}')" title="Delete">×</button>
       </div>
     </div>
     <div class="oe-chips">
@@ -5543,9 +5748,9 @@ function renderEditableOrderCard(item){
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <button class="toggle-bd" onclick="toggleBD(this)">▸ Breakdown</button>
-      <button style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;" onclick="editNote(${item.id});renderOrdersPage()">✏️ Note</button>
+      <button style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;" onclick="editNote('${item.id}');renderOrdersPage()">✏️ Note</button>
     </div>
-    ${item.notes?`<div class="order-note"><span class="note-ico">📝</span><span>${item.notes}</span><button class="note-edit-btn" onclick="editNote(${item.id});renderOrdersPage()">edit</button></div>`:''}
+    ${item.notes?`<div class="order-note"><span class="note-ico">📝</span><span>${item.notes}</span><button class="note-edit-btn" onclick="editNote('${item.id}');renderOrdersPage()">edit</button></div>`:''}
     <div class="oe-breakdown">
       <div class="bd-row"><span>Revenue (${item.qty}×${fmt(item.price)})</span><span style="color:var(--green)">${fmt(item.revenue)}</span></div>
       <div class="bd-row"><span>Product Cost</span><span style="color:var(--red)">−${fmt(item.costPerUnit*item.qty)}</span></div>
@@ -5562,7 +5767,8 @@ function renderEditableOrderCard(item){
 
 function deleteOrderFromPage(id){
   if(!confirm('Delete this order?')) return;
-  D.orders = D.orders.filter(o => o.id !== id);
+  const sid=String(id);
+  D.orders = D.orders.filter(o => String(o.id) !== sid);
   save(); renderOrdersPage(); renderDashboard();
   showToast('Order deleted');
 }
@@ -5571,9 +5777,10 @@ function deleteOrderFromPage(id){
 let editingOrderId = null;
 
 function openEditOrder(id){
-  const o = D.orders.find(x => x.id === id);
+  const sid=String(id);
+  const o = D.orders.find(x => String(x.id) === sid);
   if(!o) return;
-  editingOrderId = id;
+  editingOrderId = sid;
 
   // Fill edit modal fields
   document.getElementById('eo-name').value = o.name || '';
@@ -5615,7 +5822,7 @@ function calcEditPreview(){
 
 function saveEditOrder(){
   if(!editingOrderId) return;
-  const idx = D.orders.findIndex(o => o.id === editingOrderId);
+  const idx = D.orders.findIndex(o => String(o.id) === String(editingOrderId));
   if(idx < 0) return;
   const o = D.orders[idx];
   const price = parseFloat(document.getElementById('eo-price').value)||0;
@@ -5919,6 +6126,18 @@ async function syncToSupabase(){
     if(D.drafts.length)
       await run('drft.ins',    supa.from('drafts').insert(D.drafts.map(d=>({business_id:bid,config:d}))));
 
+    // Bug 7: only reload when rows were inserted (avoids flicker on every save).
+    // Bug 8: isolated try/catch so a reload failure never masks sync success.
+    const needsReload = D.orders.length||D.misc.length||D.inventory.length||D.remittance.length||D.purchases.length||D.templates.length||D.drafts.length;
+    if(needsReload){
+      try{
+        await loadDataFromSupabase();
+        // Re-render all lists so UUIDs are current and buttons work immediately
+        renderDashboard();renderEntries();renderRemittance();renderInventory();
+      }catch(reloadErr){
+        console.warn('Post-sync reload failed (data is saved):',reloadErr);
+      }
+    }
     showSyncBadge('synced');setTimeout(hideSyncBadge,2500);
   }catch(e){
     console.error('Sync failed:',e.message||e);
@@ -6093,11 +6312,398 @@ async function logOut(){
     <span class="bb-icon">⊕</span>
     <span class="bb-label">Manage</span>
   </button>
+  <button class="bb-btn" data-page="labels" onclick="showPage('labels')">
+    <span class="bb-icon">🏷</span>
+    <span class="bb-label">Labels</span>
+  </button>
   <button class="bb-btn" data-page="settings" onclick="showPage('settings')">
     <span class="bb-icon">⚙</span>
     <span class="bb-label">Settings</span>
   </button>
 </nav>
 
+<!-- ═══ LABEL MAKER JS ═══ -->
+<script>
+// ── Label Maker State ──
+let lm_logoUrl='', lm_payMode='cod', lm_sizeKey='6x4', lm_showQr=true;
+let lm_rowIdSeq=0, lm_rows=[];
+const LM_SIZES={'6x4':{w:6,h:4},'4x6':{w:4,h:6},'4x4':{w:4,h:4},'a5':{w:5.83,h:8.27},'a4':{w:8.27,h:11.69}};
+const LM_ONES=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const LM_TENS=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+
+function lm_n2w(n){
+  n=parseInt(n)||0;if(!n)return'Zero';
+  if(n<20)return LM_ONES[n];
+  if(n<100)return LM_TENS[Math.floor(n/10)]+(n%10?' '+LM_ONES[n%10]:'');
+  if(n<1000)return LM_ONES[Math.floor(n/100)]+' Hundred'+(n%100?' And '+lm_n2w(n%100):'');
+  return lm_n2w(Math.floor(n/1000))+' Thousand'+(n%1000?' '+lm_n2w(n%1000):'');
+}
+function lm_autoCodWords(){
+  const el=document.getElementById('lm_codWords');
+  if(el) el.value=lm_n2w(parseInt(document.getElementById('lm_codAmt').value)||0)+' Rupees Only';
+}
+function lm_v(id){const el=document.getElementById(id);return el?el.value:'';}
+
+function lm_setPay(m){
+  lm_payMode=m;
+  const bc=document.getElementById('lm_btnCod'),bp=document.getElementById('lm_btnPre');
+  if(bc) bc.style.cssText='padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;'+(m==='cod'?'background:#fff7ed;color:#c2410c;':'background:var(--bg);color:var(--text3);border-left:1px solid var(--border);');
+  if(bp) bp.style.cssText='padding:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;border-left:1px solid var(--border);'+(m==='pre'?'background:#f0fdf4;color:#15803d;':'background:var(--bg);color:var(--text3);');
+  const cf=document.getElementById('lm_codFields');
+  if(cf) cf.style.display=m==='cod'?'flex':'none';
+  const st=document.getElementById('lm_shipType');
+  if(st) st.value=m==='cod'?'SPEED POST':'REGISTERED';
+  lm_render();
+}
+
+function lm_toggleQr(){
+  lm_showQr=document.getElementById('lm_qrEnabled').checked;
+  const qf=document.getElementById('lm_qrFields');
+  if(qf) qf.style.display=lm_showQr?'block':'none';
+  lm_render();
+}
+
+function lm_setSize(k,btn){
+  document.querySelectorAll('.lm-pill').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on'); lm_sizeKey=k;
+  const cwh=document.getElementById('lm_cwh');
+  if(cwh) cwh.style.display=k==='custom'?'flex':'none';
+  lm_render();
+}
+
+function lm_makeRow(data){
+  data=data||{};
+  return{id:++lm_rowIdSeq,name:data.name||'',addr:data.addr||'',c1:data.c1||'',c2:data.c2||'',prod:data.prod||''};
+}
+
+function lm_addRow(){
+  lm_rows.push(lm_makeRow());
+  lm_renderCards(); lm_render();
+}
+
+function lm_removeRow(id){
+  lm_rows=lm_rows.filter(r=>r.id!==id);
+  if(!lm_rows.length) lm_rows.push(lm_makeRow());
+  lm_renderCards(); lm_render();
+}
+
+function lm_clearAll(){
+  lm_rows=[lm_makeRow()];
+  lm_renderCards(); lm_render();
+}
+
+// ── Label detail modal ──
+let lm_editingRowId=null;
+
+function lm_openDetail(rowId){
+  lm_editingRowId=rowId;
+  const r=lm_rows.find(x=>x.id===rowId);
+  if(!r)return;
+  document.getElementById('lm_dm_name').value=r.name||'';
+  document.getElementById('lm_dm_addr').value=r.addr||'';
+  document.getElementById('lm_dm_c1').value=r.c1||'';
+  document.getElementById('lm_dm_c2').value=r.c2||'';
+  document.getElementById('lm_dm_prod').value=r.prod||'';
+  const isEmpty=!r.name&&!r.addr&&!r.c1&&!r.prod;
+  document.getElementById('lm_dm_title').textContent=isEmpty?'Add Label Details':'Edit Label Details';
+  document.getElementById('lm_detailModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('lm_dm_name').focus(),80);
+}
+
+function lm_closeDetail(){
+  document.getElementById('lm_detailModal').classList.add('hidden');
+  lm_editingRowId=null;
+}
+
+function lm_saveDetail(){
+  if(lm_editingRowId===null)return;
+  const r=lm_rows.find(x=>x.id===lm_editingRowId);
+  if(!r)return;
+  r.name=document.getElementById('lm_dm_name').value.trim();
+  r.addr=document.getElementById('lm_dm_addr').value.trim();
+  r.c1=document.getElementById('lm_dm_c1').value.trim();
+  r.c2=document.getElementById('lm_dm_c2').value.trim();
+  r.prod=document.getElementById('lm_dm_prod').value.trim();
+  lm_closeDetail(); lm_renderCards(); lm_render();
+}
+
+function lm_renderCards(){
+  const container=document.getElementById('lm_labelCards');
+  if(!container)return;
+  container.innerHTML='';
+  lm_rows.forEach((r,i)=>{
+    const isEmpty=!r.name&&!r.addr&&!r.c1&&!r.prod;
+    const card=document.createElement('div');
+    card.className='lm-label-card';
+
+    // Head
+    const head=document.createElement('div');
+    head.className='lm-card-head';
+    head.innerHTML=`<div class="lm-card-num">${i+1}</div><div class="lm-card-name${isEmpty?' empty':''}">${isEmpty?'No details yet':r.name||'(No name)'}</div>`;
+    const acts=document.createElement('div');
+    acts.style.cssText='display:flex;gap:5px;flex-shrink:0;';
+    const editBtn=document.createElement('button');
+    editBtn.style.cssText='font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;';
+    editBtn.textContent=isEmpty?'Add details':'Edit';
+    editBtn.onclick=()=>lm_openDetail(r.id);
+    acts.appendChild(editBtn);
+    if(lm_rows.length>1){
+      const delBtn=document.createElement('button');
+      delBtn.style.cssText='font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#dc2626;cursor:pointer;font-family:inherit;';
+      delBtn.textContent='×';
+      delBtn.onclick=()=>lm_removeRow(r.id);
+      acts.appendChild(delBtn);
+    }
+    head.appendChild(acts);
+    card.appendChild(head);
+
+    // Body
+    if(!isEmpty){
+      const body=document.createElement('div');
+      body.style.cssText='padding:9px 12px;font-size:12px;color:var(--text2);line-height:1.6;';
+      const info=[
+        {l:'Address',v:r.addr},
+        {l:'Contact',v:[r.c1,r.c2].filter(Boolean).join(', ')},
+        {l:'Product',v:r.prod},
+      ];
+      info.forEach(row=>{
+        if(!row.v)return;
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;gap:6px;align-items:baseline;';
+        d.innerHTML=`<span style="font-size:10px;font-weight:600;color:var(--text3);min-width:44px;text-transform:uppercase;">${row.l}</span><span>${row.v.replace(/\n/g,', ')}</span>`;
+        body.appendChild(d);
+      });
+      card.appendChild(body);
+    } else {
+      const addBtn=document.createElement('button');
+      addBtn.style.cssText='width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:0 0 9px 9px;background:var(--bg);color:var(--text3);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;';
+      addBtn.textContent='+ Add details';
+      addBtn.onclick=()=>lm_openDetail(r.id);
+      card.appendChild(addBtn);
+    }
+    container.appendChild(card);
+  });
+  const bc=document.getElementById('lm_bulkCount');
+  if(bc) bc.textContent=lm_rows.length===1?'1 label':lm_rows.length+' labels';
+}
+
+// ── Get size ──
+function lm_getSize(scale){
+  let w,h;
+  if(lm_sizeKey==='custom'){w=parseFloat(lm_v('lm_cW'))||6;h=parseFloat(lm_v('lm_cH'))||4;}
+  else({w,h}=LM_SIZES[lm_sizeKey]);
+  return{w:Math.round(w*96*scale),h:Math.round(h*96*scale)};
+}
+
+// ── Build label DOM ──
+function lm_buildLabel(rowData,idx,scale){
+  const{w,h}=lm_getSize(scale);
+  const sc=n=>Math.max(6,Math.round(n*scale*0.9))+'px';
+  const fs={body:8.5,title:11,ship:14,pay:10};
+
+  const shipType=lm_v('lm_shipType')||'SPEED POST';
+  const custId=lm_v('lm_custId');
+  const fromName=lm_v('lm_sFrom');
+  const fromAddr=lm_v('lm_aFrom').replace(/\n/g,'<br>');
+  const fromEmail=lm_v('lm_eFrom');
+  const fromMob=lm_v('lm_mFrom');
+  const codAmt=lm_v('lm_codAmt');
+  const codWords=lm_v('lm_codWords');
+  const qrVal=lm_v('lm_qrContent')||custId||'LABEL';
+  const qrSize=Math.round(Math.min(w,h)*0.14);
+  const qrId='lmq'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+(idx||0);
+
+  const toName=rowData.name||'';
+  const toAddr=(rowData.addr||'').replace(/\n/g,'<br>');
+  const c1=rowData.c1||'';
+  const c2=rowData.c2||'';
+  const prod=rowData.prod||'';
+
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;display:inline-block;';
+
+  const lbl=document.createElement('div');
+  lbl.className='lm-lbl';
+  lbl.style.cssText=`width:${w}px;min-height:${h}px;`;
+
+  // Head
+  const head=document.createElement('div');head.className='lm-lbl-head';
+  if(lm_logoUrl){
+    const li=document.createElement('img');li.className='lm-lbl-logo';li.src=lm_logoUrl;
+    li.style.maxHeight=Math.round(34*scale)+'px';head.appendChild(li);
+  }
+  const hc=document.createElement('div');hc.className='lm-lbl-hc';
+  hc.innerHTML=`<div class="lm-lbl-ship" style="font-size:${sc(fs.ship)}">${shipType}</div>${custId?`<div class="lm-lbl-cid" style="font-size:${sc(fs.pay)}">CUSTOMER ID - ${custId}</div>`:''}`;
+  head.appendChild(hc);lbl.appendChild(head);
+
+  // Payment
+  const pay=document.createElement('div');
+  pay.className='lm-lbl-pay '+(lm_payMode==='cod'?'cod':'pre');
+  pay.style.fontSize=sc(fs.pay);
+  pay.innerHTML=lm_payMode==='cod'
+    ?`<b>COD</b> &mdash; RS ( <b>&#8377;${codAmt}</b> ) &mdash; ${codWords}`
+    :`<b>PREPAID</b> &mdash; Payment collected`;
+  lbl.appendChild(pay);
+
+  // Addresses
+  const addrs=document.createElement('div');addrs.className='lm-lbl-addrs';
+  const fb=document.createElement('div');fb.className='lm-lbl-from';fb.style.fontSize=sc(fs.body);
+  fb.innerHTML=`<span class="lm-lbl-atag" style="font-size:${sc(fs.body*0.9)}">From</span><span class="lm-lbl-aname" style="font-size:${sc(fs.title)}">${fromName}</span><div>${fromAddr}</div>${fromEmail?`<div>${fromEmail}</div>`:''}${fromMob?`<div>Mob : ${fromMob}</div>`:''}`;
+  const tb=document.createElement('div');tb.className='lm-lbl-to';tb.style.fontSize=sc(fs.body);
+  tb.innerHTML=`<span class="lm-lbl-atag" style="font-size:${sc(fs.body*0.9)}">To</span><span class="lm-lbl-aname" style="font-size:${sc(fs.title+1)}">${toName}</span><div>${toAddr}</div>${(c1||c2)?`<span class="lm-lbl-contact" style="font-size:${sc(fs.body)}">Contact : ${c1}${c2?', '+c2:''}</span>`:''}`;
+  addrs.appendChild(fb);addrs.appendChild(tb);lbl.appendChild(addrs);
+
+  // Footer
+  const foot=document.createElement('div');foot.className='lm-lbl-foot';
+  const pe=document.createElement('div');pe.className='lm-lbl-prod';pe.style.fontSize=sc(fs.body);
+  if(prod) pe.innerHTML=`Product: <span style="font-weight:400">${prod}</span>`;
+  foot.appendChild(pe);
+  if(lm_showQr){
+    const qc=document.createElement('div');
+    qc.id=qrId;qc.dataset.v=qrVal;qc.dataset.s=qrSize;
+    foot.appendChild(qc);
+  }
+  lbl.appendChild(foot);
+  wrap.appendChild(lbl);
+  return{el:wrap,qrId:lm_showQr?qrId:null};
+}
+
+// ── Render preview ──
+let lm_rt=null;
+function lm_render(){clearTimeout(lm_rt);lm_rt=setTimeout(lm__render,80);}
+function lm__render(){
+  const stack=document.getElementById('lm_labelsStack');
+  if(!stack)return;
+  stack.innerHTML='';
+  const{w:fw}=lm_getSize(1);
+  const scale=Math.min(1,Math.min(stack.offsetWidth||360,600)/fw);
+  const jobs=[];
+  lm_rows.forEach((r,i)=>{
+    const{el,qrId}=lm_buildLabel(r,i,scale);
+    stack.appendChild(el);
+    if(qrId)jobs.push(qrId);
+  });
+  const cb=document.getElementById('lm_cntBadge');
+  if(cb) cb.textContent=lm_rows.length===1?'1 label':lm_rows.length+' labels';
+  requestAnimationFrame(()=>{
+    jobs.forEach(id=>{
+      const c=document.getElementById(id);if(!c)return;
+      const v=c.dataset.v||'X',s=parseInt(c.dataset.s)||56;
+      try{new QRCode(c,{text:v,width:s,height:s,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M})}catch(e){}
+    });
+  });
+}
+
+// ── Print ──
+function lm_printAll(){
+  const{w,h}=lm_sizeKey==='custom'
+    ?{w:parseFloat(lm_v('lm_cW'))||6,h:parseFloat(lm_v('lm_cH'))||4}
+    :LM_SIZES[lm_sizeKey];
+  let html='';
+  lm_rows.forEach((r,i)=>{
+    const{el}=lm_buildLabel(r,i,1);
+    html+=`<div class="pg">${el.outerHTML}</div>`;
+  });
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Print Labels</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+<style>*{box-sizing:border-box;margin:0;padding:0}@page{size:${w}in ${h}in;margin:0}body{background:#fff;font-family:Arial,sans-serif}.pg{width:${w}in;height:${h}in;display:flex;align-items:center;justify-content:center;page-break-after:always}.pg:last-child{page-break-after:avoid}.lm-lbl{font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;border:2px solid #000;display:flex;flex-direction:column;width:${w}in;min-height:${h}in}.lm-lbl-head{border-bottom:2px solid #000;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.lm-lbl-hc{flex:1;text-align:center}.lm-lbl-ship{font-weight:700;text-transform:uppercase;text-decoration:underline;letter-spacing:.8px}.lm-lbl-cid{font-weight:700;text-decoration:underline;margin-top:2px}.lm-lbl-logo{max-height:34px;max-width:76px;object-fit:contain}.lm-lbl-pay{border-bottom:1.5px solid #000;padding:5px 10px;font-weight:700}.lm-lbl-pay.cod{background:#fff8f3}.lm-lbl-pay.pre{background:#f3fff7}.lm-lbl-addrs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #000;flex:1}.lm-lbl-from{border-right:1.5px solid #000;padding:7px 9px;line-height:1.5}.lm-lbl-to{padding:7px 9px;line-height:1.5}.lm-lbl-atag{font-weight:700}.lm-lbl-aname{font-weight:700;text-decoration:underline;margin-top:1px;margin-bottom:2px;display:block}.lm-lbl-contact{font-weight:700;margin-top:3px;display:block}.lm-lbl-foot{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;gap:8px}.lm-lbl-prod{font-weight:700}</style></head><body>${html}
+<script>window.onload=function(){document.querySelectorAll('[data-v]').forEach(function(el){var v=el.dataset.v||'X',s=parseInt(el.dataset.s)||80;try{new QRCode(el,{text:v,width:s,height:s,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M})}catch(e){}});setTimeout(function(){window.print();},700);};<\/script></body></html>`);
+  win.document.close();
+}
+
+// ── Sender modal ──
+function lm_openSender(){
+  document.getElementById('lm_sm_name').value=lm_v('lm_sFrom');
+  document.getElementById('lm_sm_addr').value=lm_v('lm_aFrom');
+  document.getElementById('lm_sm_email').value=lm_v('lm_eFrom');
+  document.getElementById('lm_sm_mob').value=lm_v('lm_mFrom');
+  document.getElementById('lm_senderModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('lm_sm_name').focus(),80);
+}
+function lm_closeSender(){document.getElementById('lm_senderModal').classList.add('hidden');}
+function lm_handleSenderLogo(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    lm_logoUrl=e.target.result;
+    const th=document.getElementById('lm_avatarThumb');
+    const ic=document.getElementById('lm_avatarIcon');
+    if(th){th.src=lm_logoUrl;th.style.display='block';}
+    if(ic) ic.style.display='none';
+    lm_render();
+  };
+  r.readAsDataURL(f);
+}
+function lm_saveSender(){
+  document.getElementById('lm_sFrom').value=document.getElementById('lm_sm_name').value;
+  document.getElementById('lm_aFrom').value=document.getElementById('lm_sm_addr').value;
+  document.getElementById('lm_eFrom').value=document.getElementById('lm_sm_email').value;
+  document.getElementById('lm_mFrom').value=document.getElementById('lm_sm_mob').value;
+  const name=document.getElementById('lm_sFrom').value;
+  const addr=document.getElementById('lm_aFrom').value.split('\n')[0];
+  document.getElementById('lm_senderName').textContent=name||'No name';
+  document.getElementById('lm_senderAddr').textContent=addr||'No address';
+  lm_closeSender(); lm_render();
+}
+
+// ── Init label maker when page opens ──
+function lm_init(){
+  if(lm_rows.length===0){
+    lm_rows.push(lm_makeRow());
+    lm_renderCards();
+    lm_render();
+  }
+}
+</script>
+
+<!-- LABEL MAKER — SENDER MODAL -->
+<div class="modal-overlay hidden" id="lm_senderModal" onclick="if(event.target===this)lm_closeSender()">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3 class="modal-title">Sender Details</h3></div>
+      <button class="modal-close" onclick="lm_closeSender()">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px;">
+      <div style="border:1.5px dashed var(--border);border-radius:9px;padding:12px;text-align:center;position:relative;cursor:pointer;" onclick="document.getElementById('lm_logoInp').click()">
+        <input type="file" id="lm_logoInp" accept="image/*" style="display:none;" onchange="lm_handleSenderLogo(this)">
+        <div style="font-size:12px;color:var(--text3);">📷 Upload Logo (optional)</div>
+      </div>
+      <div class="field"><label>Company / Sender Name</label><input id="lm_sm_name" placeholder="e.g. FOAMORA"></div>
+      <div class="field"><label>Full Address</label><textarea id="lm_sm_addr" rows="3" placeholder="House, Street&#10;City - PIN&#10;State, Country"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field"><label>Email</label><input id="lm_sm_email" type="email" placeholder="email@example.com"></div>
+        <div class="field"><label>Mobile</label><input id="lm_sm_mob" type="tel" placeholder="Phone number"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="lm_closeSender()">Cancel</button>
+      <button class="btn-primary" onclick="lm_saveSender()">Save & Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- LABEL MAKER — DETAIL MODAL -->
+<div class="modal-overlay hidden" id="lm_detailModal" onclick="if(event.target===this)lm_closeDetail()">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3 id="lm_dm_title" class="modal-title">Label Details</h3></div>
+      <button class="modal-close" onclick="lm_closeDetail()">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px;">
+      <div class="field"><label>Full Name</label><input id="lm_dm_name" placeholder="Customer name"></div>
+      <div class="field"><label>Address</label><textarea id="lm_dm_addr" rows="3" placeholder="House name, Street&#10;City - PIN&#10;District"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field"><label>Contact 1</label><input id="lm_dm_c1" type="tel" placeholder="Mobile number"></div>
+        <div class="field"><label>Contact 2 (optional)</label><input id="lm_dm_c2" type="tel" placeholder="Alternate"></div>
+      </div>
+      <div class="field"><label>Product Description</label><input id="lm_dm_prod" placeholder="e.g. Foam Pillow Black, Size M"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="lm_closeDetail()">Cancel</button>
+      <button class="btn-primary" onclick="lm_saveDetail()">Save</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
